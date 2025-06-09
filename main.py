@@ -2,6 +2,25 @@ from sys import argv
 from datetime import date, datetime, timedelta
 
 def main():
+    """
+    Main function to execute the budget calculation and display information.
+    It checks if the budget is provided as a command line argument,
+    calculates the remaining days in the month, and computes the budget per day.
+    """
+    
+    # Check if the budget is provided as a command line argument
+    if len(argv) != 2:
+        print("Usage: python main.py <budget>")
+        return
+    try:
+        budget = float(argv[1])
+        if budget < 0:
+            raise ValueError("Budget must be a non-negative number.")
+    except ValueError as e:
+        print(f"Invalid budget: {e}")
+        return
+    
+    # Display today's date, remaining days in the month, and budget information
     print(f"Today's date is {date.today()}.")
     print(f"There's {get_remaining_month_days()} days left in this month.")
     print(f"Your budget is {argv[1]} dollars.")
