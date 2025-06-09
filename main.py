@@ -7,7 +7,7 @@ def main():
     It checks if the budget is provided as a command line argument,
     calculates the remaining days in the month, and computes the budget per day.
     """
-    
+
     # Check if the budget is provided as a command line argument
     if len(argv) != 2:
         print("Usage: python main.py <budget>")
@@ -16,6 +16,16 @@ def main():
         budget = float(argv[1])
         if budget < 0:
             raise ValueError("Budget must be a non-negative number.")
+        if budget == 0:
+            print("Time to save money!")
+        if budget > 1000000:
+            print("...buddy, are you rich?")
+            print("Wow, that's a lot of money!")
+            print("You can buy a mansion with that!")
+            print("Or maybe a yacht?")
+            print("You definitely don't need to worry about your budget!")
+            print("Just enjoy your wealth!")
+            exit()
     except ValueError as e:
         print(f"Invalid budget: {e}")
         return
@@ -23,8 +33,8 @@ def main():
     # Display today's date, remaining days in the month, and budget information
     print(f"Today's date is {date.today()}.")
     print(f"There's {get_remaining_month_days()} days left in this month.")
-    print(f"Your budget is {argv[1]} dollars.")
-    print(f"Your budget per day for the remaining days is {get_budget_divided_by_days(float(argv[1])):.2f} dollars.")
+    print(f"Your budget is {float(argv[1]):,.2f} dollars.")
+    print(f"Your budget per day for the remaining days is {get_budget_divided_by_days(float(argv[1])):,.2f} dollars.")
 
 def get_remaining_month_days() -> int:
     """
