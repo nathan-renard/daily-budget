@@ -1,5 +1,5 @@
 from sys import argv
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 def main():
     """
@@ -32,9 +32,12 @@ def main():
     
     # Display today's date, remaining days in the month, and budget information
     print(f"Today's date is {date.today()}.")
-    print(f"There's {get_remaining_month_days()} days left in this month.")
-    print(f"Your budget is {float(argv[1]):,.2f} dollars.")
-    print(f"Your budget per day for the remaining days is {get_budget_divided_by_days(float(argv[1])):,.2f} dollars.")
+    remaining_days = get_remaining_month_days()
+    print(f"There's {remaining_days} days left in this month.")
+    print(f"Your budget is {budget:,.2f} dollars.")
+    print(
+        f"Your budget per day for the remaining days is {get_budget_divided_by_days(budget):,.2f} dollars."
+    )
 
 def get_remaining_month_days() -> int:
     """
@@ -59,4 +62,6 @@ def get_budget_divided_by_days(budget: float) -> float:
     remaining_days = get_remaining_month_days()
     return budget / remaining_days if remaining_days > 0 else 0.0
 
-main()
+
+if __name__ == "__main__":
+    main()
