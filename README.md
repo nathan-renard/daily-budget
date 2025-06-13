@@ -2,6 +2,11 @@
 
 A minimal Python CLI tool to calculate your daily spending limit based on your remaining monthly budget.
 
+## Version
+
+**1.01**  
+- Updated usage: Now accepts the budget as a command-line argument, no need to add as argv
+
 ## Features
 
 - Calculates how many days are left in the current month
@@ -15,20 +20,20 @@ A minimal Python CLI tool to calculate your daily spending limit based on your r
 ## Usage
 
 ```bash
-python main.py <budget>
+python main.py
 ```
 
 ## Example
 
-```
-python main.py 300
+```bash
+python main.py
 ```
 
 ## Example output
 
-Today's date is 2025-06-08.
-There's 22 days left in this month.
-Your budget is 300 dollars.
+Today's date is 2025-06-08.  
+There's 22 days left in this month.  
+Your budget is 300 dollars.  
 Your budget per day for the remaining days is 13.64 dollars.
 
 ## Input Validation
