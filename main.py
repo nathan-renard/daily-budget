@@ -1,3 +1,4 @@
+import json
 from datetime import date, timedelta
 
 def main():
@@ -14,8 +15,7 @@ def main():
     print(f"Your budget per day for the remaining days is {get_budget_divided_by_days(float(budget)):,.2f} dollars.")
 
 def get_remaining_month_days() -> int:
-    """
-    Calculate the number of days remaining in the current month.
+    """;
     Returns:
         int: Number of days remaining in the current month.
     """
@@ -36,18 +36,32 @@ def get_budget_divided_by_days(budget: float) -> float:
     remaining_days = get_remaining_month_days()
     return budget / remaining_days if remaining_days > 0 else 0.0
 
+def get_budget() -> float:
+    """
+    Retrieve the budget from a JSON file.
+    If the file does not exist or is empty, prompt the user to set a budget.
+    Returns:
+        float: The budget value.
+    """
+    try:
+        with open('budget.json', 'r') as file:
+            data = json.load(file)
+            return data.get('budget', 0.0)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("No budget found. Please set your budget.")
+        return 0.0
+
 def set_budget() -> float:
     """
-    Prompt the user to set a budget and validate the input, if the input is not a valid number, prompt again.
-    If the budget is negative, raise a ValueError.
-    If the budget is zero, print a message indicating the need to save money.
-    If the budget is greater than 1,000,000, call print_rich_message.
+    Prompt the user to set a budget and validate the input.
     Returns:
-        float: The user's budget.
-    """    
+        float: The updated budget value.
+    """
+    current_budget = get_budget()
+    print(f"Current budget is {current_budget:,.2f} dollars.")
     while True:
         try:
-            budget = float(input("Please set your budget: "))
+            budget = float(input("Please set your udpated budget: "))
             break
         except ValueError:
             print("Invalid input. Please enter a valid number for your budget.")
@@ -62,6 +76,9 @@ def set_budget() -> float:
         print(f"Invalid budget: {e}")
         return
 
+    # Save the budget to a JSON file
+    with open('budget.json', 'w') as file:
+        json.dump({'budget': budget}, file)
     return budget
 
 def print_rich_message():
