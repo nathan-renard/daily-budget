@@ -4,8 +4,8 @@ A minimal Python CLI tool to calculate your daily spending limit based on your r
 
 ## Version
 
-**1.0.2**  
-- Updated usage: Now saves the previously added budget on the run, and asks you to update accordingly.
+**1.0.3**  
+- User is now allowed to update the budget, or not. Freedom.
 
 ## Features
 

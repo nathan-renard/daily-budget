@@ -3,19 +3,34 @@ from datetime import date, timedelta
 
 def main():
     """
-    Main function to execute the budget management program.
-    It prompts the user to set a budget, calculates the remaining days in the month,
-    and displays the budget per day for the remaining days.
-    """    
-    budget = set_budget()
+    Main function to manage the budget.
+    It retrieves the current budget, allows the user to update it,
+    and displays the current date, remaining days in the month, and budget details.
+    """
+    budget = get_budget()
+    
+    if budget > 0:
+        print(f"Current budget is {format_budget(budget)}.")
+        print(f"Would you like to update your budget? (Y/n)")        
+        while True: 
+            update_choice = input().strip().lower()         
+            if update_choice in ("y", "n"):
+                break
+            print("Please enter a valid choice ('Y' or 'N')")
+
+    try:
+        if update_choice == "y":
+            budget = set_budget(budget)
+    except UnboundLocalError:
+        budget = set_budget(budget)
     
     print(f"Today's date is {date.today()}.")
     print(f"There's {get_remaining_month_days()} days left in this month.")
-    print(f"Your budget is {float(budget):,.2f} dollars.")
-    print(f"Your budget per day for the remaining days is {get_budget_divided_by_days(float(budget)):,.2f} dollars.")
+    print(f"Your budget is {format_budget(budget)}")
+    print(f"Your budget per day for the remaining days is {format_budget(get_budget_divided_by_days(float(budget)))}")
 
 def get_remaining_month_days() -> int:
-    """;
+    """
     Returns:
         int: Number of days remaining in the current month.
     """
@@ -51,14 +66,12 @@ def get_budget() -> float:
         print("No budget found. Please set your budget.")
         return 0.0
 
-def set_budget() -> float:
+def set_budget(current_budget) -> float:
     """
     Prompt the user to set a budget and validate the input.
     Returns:
         float: The updated budget value.
     """
-    current_budget = get_budget()
-    print(f"Current budget is {current_budget:,.2f} dollars.")
     while True:
         try:
             budget = float(input("Please set your udpated budget: "))
@@ -80,6 +93,16 @@ def set_budget() -> float:
     with open('budget.json', 'w') as file:
         json.dump({'budget': budget}, file)
     return budget
+
+def format_budget(value: float) -> str:
+    """
+    Format a float value as a currency string.
+    Args:
+        value (float): The value to format.
+    Returns:
+        str: The formatted currency string.
+    """
+    return f"${value:,.2f}"
 
 def print_rich_message():
     """
