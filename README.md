@@ -25,6 +25,7 @@ python main.py
 
 ## Example output 
 
+```
 No budget found. Please set your budget.
 Current budget is 0.00 dollars.
 Please set your udpated budget: 4300
@@ -32,6 +33,7 @@ Today's date is 2025-06-14.
 There's 17 days left in this month.
 Your budget is 4,300.00 dollars.
 Your budget per day for the remaining days is 252.94 dollars.
+```
 
 ## Input Validation
 
