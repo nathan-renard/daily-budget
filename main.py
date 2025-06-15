@@ -1,5 +1,6 @@
 import json
 from datetime import date, timedelta
+from messages import software_header, software_footer
 
 def main():
     """
@@ -23,11 +24,13 @@ def main():
             budget = set_budget(budget)
     except UnboundLocalError:
         budget = set_budget(budget)
-    
+     
+    software_header()
     print(f"Today's date is {date.today()}.")
     print(f"There's {get_remaining_month_days()} days left in this month.")
     print(f"Your budget is {format_budget(budget)}")
     print(f"Your budget per day for the remaining days is {format_budget(get_budget_divided_by_days(float(budget)))}")
+    software_footer()
 
 def get_remaining_month_days() -> int:
     """
@@ -72,27 +75,23 @@ def set_budget(current_budget) -> float:
     Returns:
         float: The updated budget value.
     """
-    while True:
+    budget = current_budget
+    while True:    
         try:
-            budget = float(input("Please set your udpated budget: "))
-            break
-        except ValueError:
-            print("Invalid input. Please enter a valid number for your budget.")
-    try:        
-        if budget < 0:
-            raise ValueError("Budget must be a non-negative number.")
-        if budget == 0:
-            print("Time to save money!")
-        if budget > 1000000:
-            print_rich_message()            
-    except ValueError as e:
-        print(f"Invalid budget: {e}")
-        return
-
-    # Save the budget to a JSON file
-    with open('budget.json', 'w') as file:
-        json.dump({'budget': budget}, file)
-    return budget
+            budget = float(input("Please set your udpated budget: "))        
+            if budget < 0:
+                raise ValueError("Budget must be a non-negative number.")
+            elif budget == 0:
+                print("You have no more budget this month, time to stop spending!")
+                exit()
+            elif budget > 1000000:
+                print_rich_message()
+            else:
+                with open('budget.json', 'w') as file:
+                    json.dump({'budget': budget}, file)
+                return budget
+        except ValueError as e:
+            print(f"Invalid input. Please enter a valid number for your budget.")
 
 def format_budget(value: float) -> str:
     """
@@ -116,4 +115,9 @@ def print_rich_message():
     print("Just enjoy your wealth!")
     exit()
 
-main()
+# Run the main function and handle keyboard interrupts gracefully
+try:
+    main()
+except KeyboardInterrupt:
+    print("\nProgram interrupted. Exiting...")
+    exit()
