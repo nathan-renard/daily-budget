@@ -1,6 +1,6 @@
 import json
 from datetime import date, timedelta
-from messages import software_header, software_footer
+from messages import software_execution
 
 def main():
     """
@@ -25,12 +25,16 @@ def main():
     except UnboundLocalError:
         budget = set_budget(budget)
      
-    software_header()
-    print(f"Today's date is {date.today()}.")
-    print(f"There's {get_remaining_month_days()} days left in this month.")
-    print(f"Your budget is {format_budget(budget)}")
-    print(f"Your budget per day for the remaining days is {format_budget(get_budget_divided_by_days(float(budget)))}")
-    software_footer()
+    software_execution(
+        date.today(),
+        get_remaining_month_days(),
+        format_budget(budget),
+        format_budget(
+            get_budget_divided_by_days(
+                float(budget)
+            )
+        )
+    )
 
 def get_remaining_month_days() -> int:
     """
