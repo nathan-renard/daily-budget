@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <title>Daily Budget</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="top">
+      <p class="eyebrow" id="monthLabel"></p>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </header>
+
+    <!-- Tab: Budget (default) -->
+    <section class="view" id="view-budget">
+      <div class="center">
+        <p class="label" id="heroLabel">You can spend today</p>
+        <p class="hero-amount" id="todayLeft">$0</p>
+        <p class="muted" id="dailyAllowance"></p>
+        <p class="projection" id="projection"></p>
+
+        <div class="stats">
+          <div>
+            <p class="stat-value" id="monthRemaining">$0</p>
+            <p class="label">left this month</p>
+          </div>
+          <div class="divider"></div>
+          <div>
+            <p class="stat-value" id="daysLeft">0</p>
+            <p class="label" id="daysLeftLabel">days left</p>
+          </div>
+        </div>
+        <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+        <p class="label" id="monthSummary"></p>
+      </div>
+      <button class="add-btn" id="addBtn">+ Add expense</button>
+    </section>
+
+    <!-- Tab: Expenses -->
+    <section class="view" id="view-expenses" hidden>
+      <div class="list-head">
+        <h2>Expenses</h2>
+        <p class="muted" id="expenseTotal"></p>
+      </div>
+      <div id="expenseGroups"></div>
+      <p id="emptyList" class="muted empty">No expenses this month.</p>
+    </section>
+
+    <!-- Tab: Calendar -->
+    <section class="view" id="view-calendar" hidden>
+      <div class="list-head">
+        <h2 id="calendarTitle">Calendar</h2>
+        <p class="muted" id="calendarScore"></p>
+      </div>
+      <div class="cal-grid cal-weekdays" id="calWeekdays"></div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="legend">
+        <span><i class="dot ok"></i>Within budget</span>
+        <span><i class="dot over"></i>Over budget</span>
+        <span><i class="dot today"></i>Today</span>
+      </div>
+      <p class="muted small" id="dayDetail"></p>
+    </section>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <!-- Notch + green bubble; slides under whichever tab is active. -->
+    <div class="indicator" id="indicator"><span class="well"></span><span class="bubble"></span></div>
+    <button class="tab" data-tab="expenses">
+      <span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".6"/><circle cx="4" cy="12" r=".6"/><circle cx="4" cy="18" r=".6"/></svg></span>
+      <span class="tab-label">Expenses</span>
+    </button>
+    <button class="tab active" data-tab="budget">
+      <span class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M15 9.5c0-1.4-1.3-2.2-3-2.2s-3 .8-3 2.2 1.3 1.9 3 2.4 3 1 3 2.4-1.3 2.2-3 2.2-3-.8-3-2.2"/></svg></span>
+      <span class="tab-label">Budget</span>
+    </button>
+    <button class="tab" data-tab="calendar">
+      <span class="tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+      <span class="tab-label">Calendar</span>
+    </button>
+  </nav>
+
+  <!-- Add expense dialog (centred overlay) -->
+  <div class="sheet-backdrop dialog" id="addSheet" hidden>
+    <form class="sheet" id="addForm" autocomplete="off">
+      <h2>Add expense</h2>
+      <input id="amountInput" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Amount" required>
+      <input id="noteInput" type="text" placeholder="What for? (optional)" maxlength="60">
+      <div class="sheet-actions">
+        <button type="button" class="ghost" data-close>Cancel</button>
+        <button type="submit" class="primary">Add</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Settings page (full screen, slides in from the right) -->
+  <section class="page" id="settingsPage" hidden>
+    <header class="page-top">
+      <button class="icon-btn back-btn" id="settingsBack" aria-label="Back">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+    </header>
+    <h1 class="page-title">Settings</h1>
+
+    <div class="set-group">
+      <div class="set-group-title">
+        <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10h18M16 15h2"/><path d="M6 6l9-3 1.5 3"/></svg>
+        <span>Budget</span>
+      </div>
+      <button class="row" id="rowBudget">
+        <span class="row-label">Monthly budget</span>
+        <span class="row-value" id="valBudget"></span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <button class="row" id="rowCurrency">
+        <span class="row-label">Currency symbol</span>
+        <span class="row-value" id="valCurrency"></span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <div class="set-group">
+      <div class="set-group-title">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg>
+        <span>Appearance</span>
+      </div>
+      <button class="row" id="rowTheme">
+        <span class="row-label">Theme</span>
+        <span class="row-value" id="valTheme"></span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <div class="set-group">
+      <div class="set-group-title">
+        <svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>
+        <span>Notifications</span>
+      </div>
+      <label class="row">
+        <span class="row-label">Morning reminder</span>
+        <span class="switch"><input type="checkbox" id="reminderToggle"><span></span></span>
+      </label>
+      <label class="row" id="rowTime">
+        <span class="row-label">Reminder time</span>
+        <input class="row-time" id="reminderTime" type="time" value="08:00">
+        <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </label>
+      <button class="row" id="reminderTest">
+        <span class="row-label">Send test notification</span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <p class="row-note" id="reminderNote"></p>
+    </div>
+
+    <button class="danger-link" id="resetBtn">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+      <span>Reset all data</span>
+    </button>
+  </section>
+
+  <!-- Edit dialog (budget / currency) -->
+  <div class="sheet-backdrop dialog" id="editSheet" hidden>
+    <form class="sheet" id="editForm" autocomplete="off">
+      <h2 id="editTitle"></h2>
+      <p class="muted small" id="editHint"></p>
+      <input id="editInput" required>
+      <div class="sheet-actions">
+        <button type="button" class="ghost" data-close id="editCancel">Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Theme picker dialog -->
+  <div class="sheet-backdrop dialog" id="themeSheet" hidden>
+    <div class="sheet">
+      <h2>Theme</h2>
+      <div class="options" id="themePicker">
+        <button type="button" data-theme="dark"><span>Dark</span><i class="radio"></i></button>
+        <button type="button" data-theme="light"><span>Light</span><i class="radio"></i></button>
+        <button type="button" data-theme="system"><span>Same as phone</span><i class="radio"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="budget.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

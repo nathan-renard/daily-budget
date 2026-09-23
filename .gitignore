@@ -1,0 +1,8 @@
+.gradle/
+build/
+local.properties
+.enjoy-logs/
+*.iml
+.idea/
+.enjoy/
+dist/
