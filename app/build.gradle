@@ -2,24 +2,44 @@ plugins {
     id 'com.android.application'
 }
 
+// Upload key for Play Store builds. keystore.properties (repo root, git-ignored) holds
+// storeFile / storePassword / keyAlias / keyPassword; create it with tools/create-upload-key.ps1.
+def keystorePropsFile = rootProject.file('keystore.properties')
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
 android {
-    namespace 'com.dailybudget.app'
+    namespace 'com.aimbire.dailybudget'
     compileSdk 36
 
     defaultConfig {
-        applicationId 'com.dailybudget.app'
+        applicationId 'com.aimbire.dailybudget'
         minSdk 26
         targetSdk 36
+        // Bump versionCode for every upload to Play (it must always increase).
         versionCode 1
         versionName '1.0'
+    }
+
+    signingConfigs {
+        if (keystorePropsFile.exists()) {
+            upload {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            // Signed with the debug key so the release APK installs directly.
-            // Swap in your own keystore before publishing to the Play Store.
-            signingConfig signingConfigs.debug
+            // Without keystore.properties, fall back to the debug key so the release APK
+            // still installs directly. Play rejects debug-signed bundles.
+            signingConfig keystorePropsFile.exists() ? signingConfigs.upload : signingConfigs.debug
         }
     }
 

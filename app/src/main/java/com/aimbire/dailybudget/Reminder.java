@@ -1,4 +1,4 @@
-package com.dailybudget.app;
+package com.aimbire.dailybudget;
 
 import android.app.AlarmManager;
 import android.app.Notification;

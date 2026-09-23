@@ -1,4 +1,4 @@
-package com.dailybudget.app;
+package com.aimbire.dailybudget;
 
 import android.Manifest;
 import android.annotation.SuppressLint;

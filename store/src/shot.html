@@ -1,0 +1,71 @@
+<!doctype html>
+<!--
+  Loads the real app UI with sample data and a fixed clock, for store screenshots.
+  Query: ?tab=budget|expenses|calendar|settings&theme=dark|light
+  Must be served from the repo root (see store/render.ps1) so it shares localStorage with the app.
+-->
+<meta charset="utf-8">
+<script>
+(function () {
+  const APP = '/app/src/main/assets/www/';
+  const q = new URLSearchParams(location.search);
+  const tab = q.get('tab') || 'budget';
+  const theme = q.get('theme') || 'dark';
+  const NOW = new Date(2026, 8, 18, 10, 30).getTime(); // 18 Sep 2026
+
+  // [day of September, amount, note]
+  const spend = [
+    [1, 42.80, 'Groceries'], [1, 4.50, 'Coffee'],
+    [2, 12.90, 'Lunch'],
+    [3, 38.00, 'Gas'], [3, 4.50, 'Coffee'],
+    [4, 64.20, 'Dinner out'],
+    [5, 27.35, 'Groceries'],
+    [7, 24.00, 'Movie tickets'], [7, 8.50, 'Popcorn'],
+    [8, 4.50, 'Coffee'], [8, 11.20, 'Lunch'],
+    [9, 51.10, 'Groceries'],
+    [10, 18.75, 'Pharmacy'],
+    [11, 30.00, 'Bus pass'],
+    [12, 85.00, 'Concert'],
+    [14, 36.40, 'Groceries'],
+    [15, 4.50, 'Coffee'], [15, 22.99, 'Books'],
+    [16, 13.60, 'Lunch'],
+    [17, 35.00, 'Gas'],
+    [18, 4.50, 'Coffee'], [18, 12.80, 'Lunch'],
+  ];
+  const expenses = spend.map(([d, amount, note], i) => {
+    const ts = new Date(2026, 8, d, 9 + (i % 8), 15).getTime();
+    return { id: 's' + i, ts, day: '2026-09-' + String(d).padStart(2, '0'), amount, note };
+  });
+  localStorage.setItem('dailyBudget.v1', JSON.stringify({
+    budget: 1500, currency: '$', expenses, since: '2026-09-01', theme,
+    reminder: { enabled: true, time: '08:00' },
+  }));
+
+  function fixClock(t) {
+    const Real = Date;
+    function FakeDate(...args) {
+      if (!new.target) return new Real(t).toString();
+      return args.length ? new Real(...args) : new Real(t);
+    }
+    FakeDate.prototype = Real.prototype;
+    FakeDate.now = () => t;
+    FakeDate.UTC = Real.UTC;
+    FakeDate.parse = Real.parse;
+    window.Date = FakeDate;
+  }
+
+  function openTab(tab) {
+    if (tab === 'settings') document.getElementById('settingsBtn').click();
+    else if (tab !== 'budget') document.querySelector('.tab[data-tab="' + tab + '"]').click();
+  }
+
+  fetch(APP + 'index.html').then((r) => r.text()).then((html) => {
+    html = html
+      .replace('<head>', '<head><base href="' + APP + '"><style>*{transition:none!important;animation:none!important}html,body{overflow:hidden!important}</style><script>(' + fixClock + ')(' + NOW + ')<\/script>')
+      .replace('</body>', '<script>(' + openTab + ')(' + JSON.stringify(tab) + ')<\/script></body>');
+    document.open();
+    document.write(html);
+    document.close();
+  });
+})();
+</script>

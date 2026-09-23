@@ -1,8 +1,8 @@
 # Minimal static file server for previewing the web UI in a desktop browser.
-# Usage: powershell -File tools/serve.ps1 [-Port 8765]
-param([int]$Port = 8765)
+# Usage: powershell -File tools/serve.ps1 [-Port 8765] [-Root <dir>]
+param([int]$Port = 8765, [string]$Root = (Join-Path $PSScriptRoot '..\app\src\main\assets\www'))
 
-$root = Resolve-Path (Join-Path $PSScriptRoot '..\app\src\main\assets\www')
+$root = Resolve-Path $Root
 $types = @{ '.html' = 'text/html'; '.js' = 'text/javascript'; '.css' = 'text/css'; '.svg' = 'image/svg+xml'; '.png' = 'image/png' }
 
 $listener = New-Object System.Net.HttpListener

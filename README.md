@@ -26,7 +26,7 @@ SharedPreferences for the notification).
 - `app/src/main/assets/www/` – the UI (plain HTML/CSS/JS)
   - `budget.js` – the budget math
   - `app.js` – UI, storage, settings
-- `app/src/main/java/com/dailybudget/app/`
+- `app/src/main/java/com/aimbire/dailybudget/`
   - `MainActivity.java` – full-screen WebView, system bars, back button, JS bridge
   - `Reminder.java`, `ReminderReceiver.java`, `RescheduleReceiver.java` – morning notification
 
@@ -38,9 +38,30 @@ Requires JDK 17 and the Android SDK (create `local.properties` with `sdk.dir=...
 ./gradlew assembleRelease
 ```
 
-Output: `app/build/outputs/apk/release/app-release.apk`. It is signed with the debug key so
-it installs directly (enable "Install unknown apps" on the phone). Use your own keystore
-before publishing to the Play Store.
+Output: `app/build/outputs/apk/release/app-release.apk`. Without an upload key it is signed
+with the debug key so it installs directly (enable "Install unknown apps" on the phone).
+
+## Publish to Google Play
+
+1. Create the upload key once. This writes `upload-keystore.jks` and `keystore.properties`, both
+   git-ignored. **Back them up**: every future update must be signed with this key.
+
+   ```
+   powershell -ExecutionPolicy Bypass -File tools/create-upload-key.ps1
+   ```
+
+2. Build the signed bundle:
+
+   ```
+   powershell -ExecutionPolicy Bypass -File tools/bundle.ps1
+   ```
+
+   Output: `dist/DailyBudget-<versionName>-<versionCode>.aab`. Upload it in Play Console
+   (Testing → Internal testing → Create release). Play App Signing re-signs it with the
+   app signing key that Google holds.
+
+3. For every new upload, bump `versionCode` (and usually `versionName`) in `app/build.gradle`.
+   Play rejects a bundle whose `versionCode` was already used.
 
 ## Preview on desktop
 
@@ -49,3 +70,13 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 ```
 
 Then open http://localhost:8765/. Notifications and system-bar colours only work in the Android app.
+
+## Store listing graphics
+
+`store/listing/` holds the Play Store icon (512×512), feature graphic (1024×500) and phone
+screenshots (1080×1920). They are rendered from `store/src/` with headless Microsoft Edge;
+the screenshots show the real app UI with sample data. To regenerate after UI changes:
+
+```
+powershell -ExecutionPolicy Bypass -File store/render.ps1
+```

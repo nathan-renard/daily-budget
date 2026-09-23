@@ -6,3 +6,8 @@ local.properties
 .idea/
 .enjoy/
 dist/
+
+# Play Store upload key: keep out of git, back up separately
+keystore.properties
+*.jks
+*.keystore
