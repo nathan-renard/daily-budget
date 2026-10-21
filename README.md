@@ -40,17 +40,7 @@ original, compact implementation, and it's a reasonable starting point if you wa
 a different formula, weekly budgets instead of monthly ones, another platform, or just a template
 for a WebView-wrapped Android app.
 
-## What the app does
-
-- **Budget** shows what's left to spend today, today's allowance, what tomorrow's allowance will be
-  if you stop spending now, and what's left for the month.
-- **Expenses** lists this month's expenses grouped by day, with daily totals.
-- **Calendar** colours each day green (within that day's allowance) or red (over it). Tap a day for
-  details.
-- **Settings** has the monthly budget, currency symbol, theme (dark, light or same as the phone) and
-  an optional morning notification with today's number.
-
-## Getting started
+## Quick Start
 
 ### Run the UI in a browser
 
@@ -103,6 +93,26 @@ signatures differ (uninstalling deletes its data). Or give your build its own ap
   `adb logcat -s DailyBudget`.
 - To check the notification without waiting for the morning, turn on the reminder in Settings and
   tap **Send test notification**. That button only appears in the Android app.
+
+## Usage
+
+1. **Set a monthly budget.** On first launch the app asks for one. The same amount applies every
+   month, and each month starts fresh.
+2. **Log expenses as you spend.** Tap **+ Add expense** on the Budget tab and enter the amount and
+   an optional note. Expenses are recorded for today.
+3. **Check today's number.** The **Budget** tab shows what you can still spend today and how much
+   of today's allowance you've used. Below that, **Tomorrow** shows the allowance you'll get if you
+   spend nothing more today, with an arrow if it's higher or lower than today's, followed by what's
+   left this month and how many days remain. If you go over, the headline shows by how much.
+4. **Look back.** **Expenses** lists this month's expenses by day with daily totals (tap × to
+   delete one). **Calendar** colours each tracked day green (within that day's allowance) or red
+   (over it), counts the days on budget, and shows what you spent against the allowance when you tap
+   a day.
+5. **Adjust settings** with the gear icon: monthly budget, currency symbol (such as $, €, £ or R$),
+   theme (dark, light or same as phone), the morning reminder and its time, and **Reset all data**.
+
+The morning reminder is a notification with today's number, for example **Today you can spend
+$73.86** with *$960.21 left this month · 13 days left* underneath.
 
 ## How it works
 
