@@ -11,3 +11,16 @@ dist/
 keystore.properties
 *.jks
 *.keystore
+
+# Other signing material (PKCS12 exports, PEPK/encrypted key output, private keys)
+*.p12
+*.pfx
+*.pem
+*.pepk
+
+# Release artifacts outside build/ and dist/
+*.apk
+*.aab
+
+# Local tool settings (may contain absolute paths with the local username)
+.claude/settings.local.json

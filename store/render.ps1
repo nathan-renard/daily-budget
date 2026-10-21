@@ -1,4 +1,5 @@
-# Renders the Play Store listing graphics into store/listing/ with headless Microsoft Edge.
+# Renders the Play Store listing graphics into store/listing/ with headless Microsoft Edge,
+# plus plain (uncaptioned) app screenshots for the README into docs/screenshots/.
 # Screenshots show the real app UI (app/src/main/assets/www) loaded with sample data.
 # Usage: powershell -ExecutionPolicy Bypass -File store/render.ps1
 $ErrorActionPreference = 'Stop'
@@ -6,6 +7,7 @@ Add-Type -AssemblyName System.Drawing
 
 $root = Resolve-Path (Join-Path $PSScriptRoot '..')
 $out = Join-Path $PSScriptRoot 'listing'
+$readmeOut = Join-Path $root 'docs\screenshots'
 $port = 8766
 $base = "http://localhost:$port/store/src"
 
@@ -16,14 +18,14 @@ $edge = @(
 if (-not $edge) { throw "Microsoft Edge not found." }
 
 $profile = Join-Path $env:TEMP "dailybudget-render-$PID"
-New-Item -ItemType Directory -Force $out | Out-Null
+New-Item -ItemType Directory -Force $out, $readmeOut | Out-Null
 
 # Serves the repo root so the store pages and the app share an origin (and localStorage).
 $server = Start-Process powershell -PassThru -WindowStyle Hidden -ArgumentList @(
     '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $root 'tools\serve.ps1'), '-Port', $port, '-Root', $root)
 
-function Render($url, $file, $width, $height, $scale, [switch]$Alpha) {
-    $png = Join-Path $out $file
+function Render($url, $file, $width, $height, $scale, [switch]$Alpha, $Dir = $out) {
+    $png = Join-Path $Dir $file
     $tmp = "$png.tmp.png"
     Start-Process $edge -Wait -WindowStyle Hidden -ArgumentList @(
         '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run',
@@ -67,6 +69,10 @@ try {
         $url = "$base/screenshot.html?tab=$($s[0])&theme=$($s[1])&title=$(Q $s[2])&sub=$(Q $s[3])"
         Render $url "screenshot-$n-$($s[0])-$($s[1]).png" 540 960 2
         $n++
+    }
+
+    foreach ($s in @(@('budget', 'dark'), @('expenses', 'dark'), @('calendar', 'dark'))) {
+        Render "$base/frame.html?tab=$($s[0])&theme=$($s[1])" "$($s[0])-$($s[1]).png" 360 760 2 -Dir $readmeOut
     }
 } finally {
     Stop-Process -Id $server.Id -ErrorAction SilentlyContinue
