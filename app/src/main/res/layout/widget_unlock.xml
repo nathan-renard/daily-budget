@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The "Unlock" pill on the locked widgets. Its content is match_parent so the background
+     stretches to fit (see the WidgetPill style). -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp">
+
+    <ImageView
+        android:id="@+id/unlock_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_pill"
+        android:tint="@color/widget_btn" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="7dp">
+
+        <ImageView
+            android:id="@+id/unlock_icon"
+            android:layout_width="13dp"
+            android:layout_height="13dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_widget_lock"
+            android:tint="@color/widget_btn_text" />
+
+        <TextView
+            android:id="@+id/unlock_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:maxLines="1"
+            android:text="Unlock widget"
+            android:textColor="@color/widget_btn_text"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</FrameLayout>

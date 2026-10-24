@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Free version, 4×1 and up: a placeholder whose tap opens the Pro dialog. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_bg"
+        android:tint="@color/widget_bg" />
+
+    <ImageView
+        android:id="@+id/border"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_border"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingEnd="14dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/label"
+                style="@style/WidgetLabel"
+                android:text="You can spend today" />
+
+            <TextView
+                android:id="@+id/amount"
+                style="@style/WidgetAmount"
+                android:layout_height="36dp"
+                android:text="$‒‒.‒‒"
+                android:textColor="@color/widget_muted" />
+
+            <ImageView
+                android:id="@+id/bar_track"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginTop="6dp"
+                android:importantForAccessibility="no"
+                android:scaleType="fitXY"
+                android:src="@drawable/widget_bar"
+                android:tint="@color/widget_line" />
+        </LinearLayout>
+
+        <include layout="@layout/widget_unlock" />
+    </LinearLayout>
+</FrameLayout>

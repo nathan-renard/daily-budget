@@ -15,11 +15,15 @@
           expenses: data.expenses || [],
           since: data.since || null,
           theme: data.theme || 'dark',
+          widgetColors: data.widgetColors || 'app',
           reminder: data.reminder || { enabled: false, time: '08:00' },
         };
       }
     } catch (_) { /* fall through to defaults */ }
-    return { budget: 0, currency: '$', expenses: [], since: null, theme: 'dark', reminder: { enabled: false, time: '08:00' } };
+    return {
+      budget: 0, currency: '$', expenses: [], since: null, theme: 'dark', widgetColors: 'app',
+      reminder: { enabled: false, time: '08:00' },
+    };
   }
 
   function save() {
@@ -27,16 +31,21 @@
     syncNative();
   }
 
-  // The Android wrapper keeps its own copy of this month's numbers so the
-  // morning notification can be computed without opening the app.
+  // The Android wrapper keeps its own copy of the data so the morning notification
+  // and the home-screen widget work without opening the app. Last month is included
+  // for the widget's seven-day strip.
   function syncNative() {
     if (!(window.Android && window.Android.syncData)) return;
-    const month = Budget.monthKey(new Date());
+    const now = new Date();
+    const from = Budget.monthKey(new Date(now.getFullYear(), now.getMonth() - 1, 1));
     window.Android.syncData(JSON.stringify({
       budget: state.budget,
       currency: state.currency,
+      since: state.since,
+      theme: state.theme,
+      widgetColors: state.widgetColors,
       expenses: state.expenses
-        .filter((e) => e.day.startsWith(month))
+        .filter((e) => e.day.slice(0, 7) >= from)
         .map((e) => ({ day: e.day, amount: e.amount })),
     }));
   }
@@ -319,7 +328,7 @@
 
   // ---- Theme -------------------------------------------------------------
   const lightQuery = window.matchMedia('(prefers-color-scheme: light)');
-  const THEME_NAMES = { dark: 'Dark', light: 'Light', system: 'Same as phone' };
+  const THEME_NAMES = { dark: 'Dark', amoled: 'AMOLED black', light: 'Light', system: 'Same as phone' };
 
   function applyTheme() {
     const resolved = state.theme === 'system' ? (lightQuery.matches ? 'light' : 'dark') : state.theme;
@@ -350,6 +359,90 @@
       setTimeout(closeSheets, 150); // let the radio animate before closing
     });
   }
+
+  // The widget follows the app's theme, or on Android 12+ the wallpaper (Material You).
+  const WIDGET_COLOR_NAMES = { app: 'Same as the app', wallpaper: 'From wallpaper' };
+  const canMatchWallpaper = !!(window.Android && window.Android.sdk && window.Android.sdk() >= 31);
+
+  function applyWidgetColors() {
+    $('rowWidgetColors').hidden = !canMatchWallpaper;
+    $('valWidgetColors').textContent = WIDGET_COLOR_NAMES[state.widgetColors];
+    for (const btn of $('widgetColorsPicker').children) {
+      btn.classList.toggle('active', btn.dataset.colors === state.widgetColors);
+    }
+  }
+
+  $('rowWidgetColors').addEventListener('click', () => openSheet('widgetColorsSheet'));
+  for (const btn of $('widgetColorsPicker').children) {
+    btn.addEventListener('click', () => {
+      state.widgetColors = btn.dataset.colors;
+      save();
+      applyWidgetColors();
+      setTimeout(closeSheets, 150);
+    });
+  }
+
+  // ---- Pro ---------------------------------------------------------------
+  // Pay what you want: three one-time purchases, any of which unlocks the widget.
+  // Purchases happen in the Android app; the browser preview shows sample prices.
+  const hasPro = !!(window.Android && window.Android.proState);
+  const PRO_TIERS = { pro_small: 'Small', pro_medium: 'Medium', pro_large: 'Large' };
+  let pro = hasPro ? JSON.parse(window.Android.proState() || '{}') : {
+    pro: false,
+    products: [
+      { id: 'pro_small', price: '$1.99' }, { id: 'pro_medium', price: '$4.99' }, { id: 'pro_large', price: '$9.99' },
+    ],
+  };
+
+  function renderPro() {
+    $('valPro').textContent = pro.pro ? 'Unlocked' : 'Pay what you want';
+    $('proTitle').textContent = pro.pro ? 'Thank you!' : 'Pay what you want';
+    $('proText').textContent = pro.pro
+      ? 'Pro is unlocked. If you\'d like to give a little more, the other amounts are one-off tips.'
+      : 'Pro adds the home-screen widget. Pick any amount: they all unlock the same thing, ' +
+        'and the bigger ones help keep the app going.';
+
+    const list = $('proOptions');
+    list.innerHTML = '';
+    for (const p of pro.products || []) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.disabled = !hasPro || p.owned;
+      btn.innerHTML = '<span></span><span class="row-value"></span>';
+      btn.firstChild.textContent = PRO_TIERS[p.id] || p.id;
+      btn.lastChild.textContent = p.owned ? 'Paid ✓' : p.price;
+      btn.addEventListener('click', () => window.Android.buyPro(p.id));
+      list.appendChild(btn);
+    }
+
+    let note = '';
+    if (!hasPro) note = 'Purchases are made in the Android app.';
+    else if (pro.pending) note = 'Your payment is pending. Pro unlocks as soon as it goes through.';
+    else if (pro.status === 'connecting') note = 'Connecting to Google Play…';
+    else if (pro.status === 'unavailable') note = 'Google Play isn\'t available, so purchases can\'t be made right now.';
+    else if (!(pro.products || []).length) note = 'Prices couldn\'t be loaded from Google Play. Try again later.';
+    $('proNote').textContent = note;
+    $('proAddWidget').hidden = !(hasPro && pro.pro && window.Android.canAddWidget());
+    $('proDebug').hidden = !pro.debug;
+  }
+
+  function openPro() {
+    renderPro();
+    openSheet('proSheet');
+  }
+
+  // Called by the Android wrapper whenever purchases or prices change.
+  window.onPro = function (next) {
+    pro = next;
+    renderPro();
+  };
+
+  $('rowPro').addEventListener('click', openPro);
+  $('proAddWidget').addEventListener('click', () => {
+    window.Android.addWidget(); // the launcher asks for confirmation
+    closeSheets();
+  });
+  $('proDebug').addEventListener('click', () => window.Android.debugTogglePro());
 
   // ---- Morning reminder --------------------------------------------------
   const hasBridge = !!(window.Android && window.Android.setReminder);
@@ -513,6 +606,21 @@
     render();
   });
 
+  // Called by the Android wrapper when the widget opens the app: its + button ('add')
+  // or the locked widget ('pro').
+  window.onLaunchAction = function (action) {
+    if (!state.budget) return; // the first-run budget prompt comes first
+    closeSheets();
+    if (action === 'add') {
+      closeSettings();
+      showTab('budget');
+      openSheet('addSheet', 'amountInput');
+    } else if (action === 'pro') {
+      openSettings();
+      openPro();
+    }
+  };
+
   // Called by the Android wrapper on the hardware back button.
   // Returns true if the app handled it, false to let Android close the app.
   window.handleBack = function () {
@@ -526,10 +634,14 @@
   prune(new Date());
   save();
   applyTheme();
+  applyWidgetColors();
   applyReminder();
+  renderPro();
   moveIndicator(false);
   render();
   if (!state.budget) openEdit('budget', true); // first run
+  const launchAction = window.Android && window.Android.takeLaunchAction && window.Android.takeLaunchAction();
+  if (launchAction) window.onLaunchAction(launchAction);
 
   // Re-render when the app comes back to the foreground or the day rolls over.
   document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });

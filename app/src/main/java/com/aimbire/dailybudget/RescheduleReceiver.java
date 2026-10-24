@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-/** Alarms are lost on reboot and go stale on clock changes; re-arm them. */
+/** Alarms are lost on reboot and go stale on clock changes; re-arm them (and redraw the widget). */
 public class RescheduleReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -14,6 +14,7 @@ public class RescheduleReceiver extends BroadcastReceiver {
                 || Intent.ACTION_TIME_CHANGED.equals(action)
                 || Intent.ACTION_TIMEZONE_CHANGED.equals(action)) {
             Reminder.schedule(context);
+            BudgetWidget.updateAll(context);
         }
     }
 }

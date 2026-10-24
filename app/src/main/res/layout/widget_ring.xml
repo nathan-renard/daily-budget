@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- B · 2×2: a ring that empties as today's allowance is spent. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_bg"
+        android:tint="@color/widget_bg" />
+
+    <ImageView
+        android:id="@+id/border"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_border"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/ring_track"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                android:scaleType="fitCenter"
+                android:src="@drawable/widget_ring_track"
+                android:tint="@color/widget_line" />
+
+            <ImageView
+                android:id="@+id/ring_arc"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                android:scaleType="fitCenter"
+                android:src="@drawable/widget_ring_arc"
+                android:tint="@color/widget_acc" />
+
+            <LinearLayout
+                android:layout_width="68dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/amount"
+                    style="@style/WidgetAmount"
+                    android:layout_height="26dp"
+                    android:autoSizeMaxTextSize="22sp"
+                    android:autoSizeMinTextSize="10sp"
+                    android:gravity="center"
+                    android:text="$56.56" />
+
+                <TextView
+                    android:id="@+id/label"
+                    style="@style/WidgetLabel"
+                    android:layout_width="match_parent"
+                    android:gravity="center"
+                    android:text="of $73.86 left"
+                    android:textSize="10sp" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/pill_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp">
+
+            <ImageView
+                android:id="@+id/pill_bg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                android:scaleType="fitXY"
+                android:src="@drawable/widget_pill"
+                android:tint="@color/widget_pill" />
+
+            <TextView
+                android:id="@+id/pill"
+                style="@style/WidgetPill"
+                android:text="↑ $78.58 tomorrow" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

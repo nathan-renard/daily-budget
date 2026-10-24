@@ -32,6 +32,17 @@
   color-scheme: light;
 }
 
+/* AMOLED theme: the dark theme on pure black, so OLED screens switch those pixels off.
+   Raised surfaces (tab bar, sheets) stay just off black so the notch still reads. */
+:root[data-theme="amoled"] {
+  --bg: #000000;
+  --surface: #0e0e0e;
+  --line: #1f1f1f;
+  --faint: #3a3a3a;
+  --well-shadow: rgba(0,0,0,.9);
+  --backdrop: rgba(0,0,0,.8);
+}
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
@@ -367,5 +378,6 @@ button { font: inherit; cursor: pointer; }
   color: var(--text); font: inherit; font-size: 16px; text-align: left;
 }
 .options button:last-child { border-bottom: 0; }
+.options button:disabled { color: var(--muted); cursor: default; }
 .radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--faint); transition: border .15s; }
 .options button.active .radio { border: 6px solid var(--accent-hi); }

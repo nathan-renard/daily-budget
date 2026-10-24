@@ -1,0 +1,13 @@
+<resources>
+    <!-- Material You, dark: tones of the wallpaper's palette. -->
+    <color name="you_bg">@android:color/system_neutral1_900</color>
+    <color name="you_text">@android:color/system_neutral1_50</color>
+    <color name="you_muted">@android:color/system_neutral2_300</color>
+    <color name="you_line">@android:color/system_neutral2_700</color>
+    <color name="you_acc">@android:color/system_accent1_200</color>
+    <color name="you_btn">@android:color/system_accent1_200</color>
+    <color name="you_btn_text">@android:color/system_accent1_900</color>
+    <color name="you_over">#e5534b</color>
+    <color name="you_ok">@android:color/system_accent1_600</color>
+    <color name="you_pill">@android:color/system_neutral1_800</color>
+</resources>

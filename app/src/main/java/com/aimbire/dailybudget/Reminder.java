@@ -9,20 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 /**
- * Morning reminder: stores a copy of the budget data pushed from the web UI,
- * schedules a daily alarm, and builds the "today you can spend" notification.
- *
- * The allowance math mirrors assets/www/budget.js:
- *   (budget − spent before today) / days left in the month (incl. today)
+ * Morning reminder: schedules a daily alarm and builds the "today you can spend"
+ * notification from the data the web UI syncs (see {@link Budget}).
  */
 final class Reminder {
 
@@ -36,11 +28,7 @@ final class Reminder {
         return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
-    // ---- Settings & data -----------------------------------------------------
-
-    static void saveData(Context context, String json) {
-        prefs(context).edit().putString("data", json).apply();
-    }
+    // ---- Settings ------------------------------------------------------------
 
     static void saveSettings(Context context, boolean enabled, int hour, int minute) {
         prefs(context).edit()
@@ -106,55 +94,20 @@ final class Reminder {
 
     /** Returns {title, text}, or null if no budget has been set. */
     static String[] buildMessage(Context context) {
-        try {
-            JSONObject data = new JSONObject(prefs(context).getString("data", "{}"));
-            double budget = data.optDouble("budget", 0);
-            if (budget <= 0) return null;
-            String currency = data.optString("currency", "$");
+        Budget.Data data = Budget.load(context);
+        if (data.budget <= 0) return null;
+        Budget.Day d = Budget.compute(data, LocalDate.now());
+        String days = d.daysLeft + (d.daysLeft == 1 ? " day left" : " days left");
 
-            LocalDate today = LocalDate.now();
-            String todayKey = today.toString();             // yyyy-MM-dd, same as budget.js dayKey
-            String monthKey = todayKey.substring(0, 7);     // yyyy-MM
-
-            double spentBefore = 0;
-            double spentToday = 0;
-            JSONArray expenses = data.optJSONArray("expenses");
-            for (int i = 0; expenses != null && i < expenses.length(); i++) {
-                JSONObject e = expenses.getJSONObject(i);
-                String day = e.getString("day");
-                if (!day.startsWith(monthKey)) continue;
-                double amount = e.getDouble("amount");
-                if (day.equals(todayKey)) spentToday += amount;
-                else if (day.compareTo(todayKey) < 0) spentBefore += amount;
-            }
-
-            int daysLeft = today.lengthOfMonth() - today.getDayOfMonth() + 1;
-            double remaining = budget - spentBefore - spentToday;
-            double allowance = Math.max(0, budget - spentBefore) / daysLeft;
-            String days = daysLeft + (daysLeft == 1 ? " day left" : " days left");
-
-            if (remaining < 0) {
-                return new String[] {
-                        "No allowance left this month",
-                        "Over budget by " + money(currency, -remaining) + " · " + days,
-                };
-            }
+        if (d.monthRemaining < 0) {
             return new String[] {
-                    "Today you can spend " + money(currency, Math.max(0, allowance - spentToday)),
-                    money(currency, remaining) + " left this month · " + days,
+                    "No allowance left this month",
+                    "Over budget by " + Budget.money(data.currency, -d.monthRemaining) + " · " + days,
             };
-        } catch (JSONException e) {
-            return null;
         }
-    }
-
-    /** Same style as the web UI: no decimals for whole amounts, otherwise two. */
-    private static String money(String currency, double value) {
-        double rounded = Math.round(value * 100) / 100.0;
-        NumberFormat nf = NumberFormat.getNumberInstance();
-        boolean whole = rounded == Math.floor(rounded);
-        nf.setMinimumFractionDigits(whole ? 0 : 2);
-        nf.setMaximumFractionDigits(2);
-        return currency + nf.format(rounded);
+        return new String[] {
+                "Today you can spend " + Budget.money(data.currency, Math.max(0, d.todayLeft)),
+                Budget.money(data.currency, d.monthRemaining) + " left this month · " + days,
+        };
     }
 }

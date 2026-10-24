@@ -1,0 +1,105 @@
+<resources>
+    <string name="widget_description">What you can spend today, on your home screen</string>
+
+    <!-- The widget layouts' built-in colours: the dark theme. The widget picker's preview uses
+         them; BudgetWidget recolours placed widgets to match the app's theme. -->
+    <color name="widget_bg">#1b1b1b</color>
+    <color name="widget_text">#f2f2f2</color>
+    <color name="widget_muted">#8a8a8a</color>
+    <color name="widget_line">#2e2e2e</color>
+    <color name="widget_acc">#4caf7d</color>
+    <color name="widget_btn">#004225</color>
+    <color name="widget_btn_text">#ffffff</color>
+    <color name="widget_ok">#0b6b3f</color>
+    <color name="widget_pill">#262626</color>
+
+    <!-- Material You colours, only used on Android 12+ (values-v31, values-night-v31). -->
+    <color name="you_bg">@color/widget_bg</color>
+    <color name="you_text">@color/widget_text</color>
+    <color name="you_muted">@color/widget_muted</color>
+    <color name="you_line">@color/widget_line</color>
+    <color name="you_acc">@color/widget_acc</color>
+    <color name="you_btn">@color/widget_btn</color>
+    <color name="you_btn_text">@color/widget_btn_text</color>
+    <color name="you_over">#e5534b</color>
+    <color name="you_ok">@color/widget_ok</color>
+    <color name="you_pill">@color/widget_pill</color>
+
+    <dimen name="widget_radius">24dp</dimen>
+
+    <style name="WidgetAmount">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:textColor">@color/widget_text</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.03</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:autoSizeTextType">uniform</item>
+        <item name="android:autoSizeMinTextSize">12sp</item>
+        <item name="android:autoSizeMaxTextSize">30sp</item>
+        <item name="android:gravity">center_vertical|start</item>
+    </style>
+
+    <style name="WidgetLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/widget_muted</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <!-- One day on the 4×2 widget's week strip. -->
+    <style name="WidgetDay">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="WidgetDayCircle">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+    </style>
+
+    <style name="WidgetDayDot">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="android:src">@drawable/widget_dot</item>
+        <item name="android:tint">@color/widget_ok</item>
+    </style>
+
+    <style name="WidgetDayNum">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textSize">10.5sp</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <style name="WidgetDayName">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:textColor">@color/widget_muted</item>
+        <item name="android:textSize">10.5sp</item>
+    </style>
+
+    <!-- The pill's text sits over a background ImageView in a wrap_content FrameLayout.
+         Both are match_parent: FrameLayout only stretches match_parent children to its
+         size when there's more than one, and the text still sets that size. -->
+    <style name="WidgetPill">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:paddingHorizontal">9dp</item>
+        <item name="android:paddingVertical">3dp</item>
+        <item name="android:textColor">@color/widget_acc</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:maxLines">1</item>
+    </style>
+</resources>

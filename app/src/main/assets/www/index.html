@@ -134,6 +134,23 @@
         <span class="row-value" id="valTheme"></span>
         <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
       </button>
+      <button class="row" id="rowWidgetColors" hidden>
+        <span class="row-label">Widget colours</span>
+        <span class="row-value" id="valWidgetColors"></span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <div class="set-group">
+      <div class="set-group-title">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/></svg>
+        <span>Pro</span>
+      </div>
+      <button class="row" id="rowPro">
+        <span class="row-label">Home-screen widget</span>
+        <span class="row-value" id="valPro"></span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
     </div>
 
     <div class="set-group">
@@ -182,9 +199,33 @@
       <h2>Theme</h2>
       <div class="options" id="themePicker">
         <button type="button" data-theme="dark"><span>Dark</span><i class="radio"></i></button>
+        <button type="button" data-theme="amoled"><span>AMOLED black</span><i class="radio"></i></button>
         <button type="button" data-theme="light"><span>Light</span><i class="radio"></i></button>
         <button type="button" data-theme="system"><span>Same as phone</span><i class="radio"></i></button>
       </div>
+    </div>
+  </div>
+
+  <!-- Widget colours picker (Android 12+) -->
+  <div class="sheet-backdrop dialog" id="widgetColorsSheet" hidden>
+    <div class="sheet">
+      <h2>Widget colours</h2>
+      <div class="options" id="widgetColorsPicker">
+        <button type="button" data-colors="app"><span>Same as the app</span><i class="radio"></i></button>
+        <button type="button" data-colors="wallpaper"><span>From your wallpaper</span><i class="radio"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pro: pay what you want -->
+  <div class="sheet-backdrop dialog" id="proSheet" hidden>
+    <div class="sheet">
+      <h2 id="proTitle"></h2>
+      <p class="muted small" id="proText"></p>
+      <div class="options" id="proOptions"></div>
+      <p class="row-note" id="proNote"></p>
+      <button type="button" class="primary" id="proAddWidget" hidden>Add widget to home screen</button>
+      <button type="button" class="ghost" id="proDebug" hidden>Debug build: lock / unlock Pro</button>
     </div>
   </div>
 

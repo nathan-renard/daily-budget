@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The ring's filled part, starting at 12 o'clock; the ImageView's level (0–10000) sets the sweep. -->
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromDegrees="-90"
+    android:toDegrees="-90"
+    android:pivotX="50%"
+    android:pivotY="50%">
+    <shape
+        android:shape="ring"
+        android:innerRadiusRatio="2.35"
+        android:thicknessRatio="13"
+        android:useLevel="true">
+        <solid android:color="#ffffff" />
+        <size android:width="100dp" android:height="100dp" />
+    </shape>
+</rotate>

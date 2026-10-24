@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The bar's filled part; the ImageView's level (0–10000) sets how much shows. -->
+<clip xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipOrientation="horizontal"
+    android:drawable="@drawable/widget_bar"
+    android:gravity="start" />

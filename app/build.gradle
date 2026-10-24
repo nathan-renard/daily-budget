@@ -48,3 +48,16 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 }
+
+dependencies {
+    // Pay-what-you-want Pro. Purchases go through the Play Store app on the device.
+    implementation('com.android.billingclient:billing:9.1.0') {
+        // The library also sends its own usage logs to Google over the network, which is what
+        // adds the INTERNET permission. Without this backend it skips them (9.1.0 catches the
+        // missing class), and the app stays offline. After upgrading, check the merged manifest.
+        exclude group: 'com.google.android.datatransport', module: 'transport-backend-cct'
+    }
+    // Billing brings in Kotlin; line up the old kotlin-stdlib-jdk7/jdk8 it also pulls in,
+    // or their classes clash with kotlin-stdlib's.
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+}

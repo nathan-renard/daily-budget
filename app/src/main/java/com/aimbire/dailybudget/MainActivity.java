@@ -3,6 +3,9 @@ package com.aimbire.dailybudget;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Insets;
@@ -22,6 +25,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
+import org.json.JSONObject;
+
 /**
  * Hosts the bundled web UI (assets/www) in a full-screen WebView.
  *
@@ -31,9 +36,15 @@ import android.widget.LinearLayout;
  */
 public class MainActivity extends Activity {
 
+    /** Set by the widget: "add" opens Add expense, "pro" opens the Pro dialog. */
+    static final String EXTRA_ACTION = "action";
+
     private WebView webView;
     private View statusSpacer;
     private View navSpacer;
+    private Pro pro;
+    private volatile String proState;
+    private volatile String launchAction;
 
     private int barColor = Color.parseColor("#111111");
     private int navColor = Color.parseColor("#1b1b1b");
@@ -89,11 +100,42 @@ public class MainActivity extends Activity {
                     OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
         }
 
+        // The web UI pulls the first state on load (proState); later changes are pushed.
+        pro = new Pro(this, json -> {
+            proState = json;
+            webView.evaluateJavascript("window.onPro && onPro(" + json + ")", null);
+        });
+        proState = pro.state();
+        if (savedInstanceState == null) launchAction = getIntent().getStringExtra(EXTRA_ACTION);
+
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
         } else {
             webView.loadUrl("file:///android_asset/www/index.html");
         }
+    }
+
+    /** The widget was tapped while the app was already open. */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String action = intent.getStringExtra(EXTRA_ACTION);
+        if (action != null) {
+            webView.evaluateJavascript(
+                    "window.onLaunchAction && onLaunchAction(" + JSONObject.quote(action) + ")", null);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        pro.refresh(); // catches refunds and purchases completed outside the app
+    }
+
+    @Override
+    protected void onDestroy() {
+        pro.end();
+        super.onDestroy();
     }
 
     private static void setHeight(View view, int height) {
@@ -143,10 +185,11 @@ public class MainActivity extends Activity {
             });
         }
 
-        /** Snapshot of budget, currency and this month's expenses, for the notification. */
+        /** Snapshot of the budget data, for the notification and the widget. */
         @JavascriptInterface
         public void syncData(String json) {
-            Reminder.saveData(MainActivity.this, json);
+            Budget.save(MainActivity.this, json);
+            BudgetWidget.updateAll(MainActivity.this);
         }
 
         @JavascriptInterface
@@ -159,6 +202,49 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void testReminder() {
             Reminder.show(MainActivity.this);
+        }
+
+        /** Android version, so the UI can offer Material You (12+). */
+        @JavascriptInterface
+        public int sdk() {
+            return Build.VERSION.SDK_INT;
+        }
+
+        /** What the widget asked for when it opened the app ("add", "pro"), once. */
+        @JavascriptInterface
+        public String takeLaunchAction() {
+            String action = launchAction;
+            launchAction = null;
+            return action;
+        }
+
+        /** {pro, status, pending, debug, products: [{id, price, owned}]} */
+        @JavascriptInterface
+        public String proState() {
+            return proState;
+        }
+
+        @JavascriptInterface
+        public void buyPro(String productId) {
+            pro.buy(productId);
+        }
+
+        @JavascriptInterface
+        public void debugTogglePro() {
+            runOnUiThread(pro::toggleDebugPro);
+        }
+
+        /** Whether the launcher can add the widget for us (most can, on Android 8+). */
+        @JavascriptInterface
+        public boolean canAddWidget() {
+            return AppWidgetManager.getInstance(MainActivity.this).isRequestPinAppWidgetSupported();
+        }
+
+        /** Asks the launcher to place the widget; it shows its own confirmation. */
+        @JavascriptInterface
+        public void addWidget() {
+            runOnUiThread(() -> AppWidgetManager.getInstance(MainActivity.this).requestPinAppWidget(
+                    new ComponentName(MainActivity.this, BudgetWidget.class), null, null));
         }
     }
 

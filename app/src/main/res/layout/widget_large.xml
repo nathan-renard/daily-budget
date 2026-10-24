@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- D · 4×2: the number, the last seven days in calendar colours, and the month. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_bg"
+        android:tint="@color/widget_bg" />
+
+    <ImageView
+        android:id="@+id/border"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_border"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/label"
+                    style="@style/WidgetLabel"
+                    android:text="You can spend today" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/amount"
+                        style="@style/WidgetAmount"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:autoSizeMaxTextSize="32sp"
+                        android:text="$56.56" />
+
+                    <FrameLayout
+                        android:id="@+id/pill_box"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp">
+
+                        <ImageView
+                            android:id="@+id/pill_bg"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:importantForAccessibility="no"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/widget_pill"
+                            android:tint="@color/widget_pill" />
+
+                        <TextView
+                            android:id="@+id/pill"
+                            style="@style/WidgetPill"
+                            android:text="↑ $78.58 tomorrow" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/add"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="14dp"
+                android:contentDescription="Add expense">
+
+                <ImageView
+                    android:id="@+id/add_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/widget_dot"
+                    android:tint="@color/widget_btn" />
+
+                <ImageView
+                    android:id="@+id/add_icon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_widget_add"
+                    android:tint="@color/widget_btn_text" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- The last seven days, today last. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingEnd="4dp">
+
+            <LinearLayout style="@style/WidgetDay">
+                <FrameLayout style="@style/WidgetDayCircle">
+                    <ImageView android:id="@+id/day0_dot" style="@style/WidgetDayDot" />
+                    <TextView android:id="@+id/day0_num" style="@style/WidgetDayNum" android:text="12" />
+                </FrameLayout>
+                <TextView android:id="@+id/day0_name" style="@style/WidgetDayName" android:text="S" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/WidgetDay">
+                <FrameLayout style="@style/WidgetDayCircle">
+                    <ImageView android:id="@+id/day1_dot" style="@style/WidgetDayDot" />
+                    <TextView android:id="@+id/day1_num" style="@style/WidgetDayNum" android:text="13" />
+                </FrameLayout>
+                <TextView android:id="@+id/day1_name" style="@style/WidgetDayName" android:text="S" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/WidgetDay">
+                <FrameLayout style="@style/WidgetDayCircle">
+                    <ImageView android:id="@+id/day2_dot" style="@style/WidgetDayDot" />
+                    <TextView android:id="@+id/day2_num" style="@style/WidgetDayNum" android:text="14" />
+                </FrameLayout>
+                <TextView android:id="@+id/day2_name" style="@style/WidgetDayName" android:text="M" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/WidgetDay">
+                <FrameLayout style="@style/WidgetDayCircle">
+                    <ImageView android:id="@+id/day3_dot" style="@style/WidgetDayDot" />
+                    <TextView android:id="@+id/day3_num" style="@style/WidgetDayNum" android:text="15" />
+                </FrameLayout>
+                <TextView android:id="@+id/day3_name" style="@style/WidgetDayName" android:text="T" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/WidgetDay">
+                <FrameLayout style="@style/WidgetDayCircle">
+                    <ImageView android:id="@+id/day4_dot" style="@style/WidgetDayDot" />
+                    <TextView android:id="@+id/day4_num" style="@style/WidgetDayNum" android:text="16" />
+                </FrameLayout>
+                <TextView android:id="@+id/day4_name" style="@style/WidgetDayName" android:text="W" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/WidgetDay">
+                <FrameLayout style="@style/WidgetDayCircle">
+                    <ImageView android:id="@+id/day5_dot" style="@style/WidgetDayDot" />
+                    <TextView android:id="@+id/day5_num" style="@style/WidgetDayNum" android:text="17" />
+                </FrameLayout>
+                <TextView android:id="@+id/day5_name" style="@style/WidgetDayName" android:text="T" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/WidgetDay">
+                <FrameLayout style="@style/WidgetDayCircle">
+                    <ImageView
+                        android:id="@+id/day6_dot"
+                        style="@style/WidgetDayDot"
+                        android:src="@drawable/widget_dot_outline"
+                        android:tint="@color/widget_acc" />
+                    <TextView android:id="@+id/day6_num" style="@style/WidgetDayNum" android:text="18" />
+                </FrameLayout>
+                <TextView android:id="@+id/day6_name" style="@style/WidgetDayName" android:text="F" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/foot_left"
+                style="@style/WidgetLabel"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="$942.91 left this month"
+                android:textSize="11.5sp" />
+
+            <TextView
+                android:id="@+id/foot_right"
+                style="@style/WidgetLabel"
+                android:layout_marginStart="8dp"
+                android:text="13 days left · 15/17 on budget"
+                android:textSize="11.5sp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

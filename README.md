@@ -4,9 +4,10 @@ An offline Android app that turns a monthly budget into one number: how much you
 Spend more today and tomorrow's number shrinks; spend less and it grows.
 
 The UI is plain HTML, CSS and JavaScript running in an Android WebView, with a thin Java shell
-around it. No frameworks, no dependencies, no build step for the UI and no network access. The
-whole app is about 1,600 lines, so you can read all of it in an afternoon and bend it into
-whatever you want.
+around it and a home-screen widget. No frameworks, no build step for the UI and no network access.
+The one dependency is Google's Play Billing Library, for the optional pay-what-you-want Pro unlock.
+The whole app is about 2,500 lines plus the widget's layouts, so you can read all of it in an
+afternoon and bend it into whatever you want.
 
 > This repository is the proof of concept behind [PerDay](https://getperday.com).
 
@@ -59,7 +60,8 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 
 Then open <http://localhost:8765/>. Data is saved to the browser's `localStorage` under the key
 `dailyBudget.v1`, so clear that to start over. The Android bridge doesn't exist in a browser, so the
-notification settings and system-bar colours do nothing there. Everything else works the same.
+notification settings, system-bar colours and purchases do nothing there (the Pro dialog shows
+sample prices). Everything else works the same.
 
 ### Build and run on Android
 
@@ -93,6 +95,16 @@ signatures differ (uninstalling deletes its data). Or give your build its own ap
   `adb logcat -s DailyBudget`.
 - To check the notification without waiting for the morning, turn on the reminder in Settings and
   tap **Send test notification**. That button only appears in the Android app.
+- Debug builds have a **Debug build: lock / unlock Pro** button in the Pro dialog (Settings → Pro),
+  so you can try the widget without buying anything.
+- Debug builds also include a screen that shows all four widget layouts at once. The extras are
+  optional: `theme` and `colors` override the settings, and `sample` swaps in example data, only
+  while the screen is drawn.
+
+  ```sh
+  adb shell am start -n com.aimbire.dailybudget/.WidgetPreviewActivity \
+      --es theme light --es colors wallpaper --ez sample true
+  ```
 
 ## Usage
 
@@ -109,7 +121,12 @@ signatures differ (uninstalling deletes its data). Or give your build its own ap
    (over it), counts the days on budget, and shows what you spent against the allowance when you tap
    a day.
 5. **Adjust settings** with the gear icon: monthly budget, currency symbol (such as $, €, £ or R$),
-   theme (dark, light or same as phone), the morning reminder and its time, and **Reset all data**.
+   theme (dark, AMOLED black, light or same as phone), widget colours (Android 12+), the morning
+   reminder and its time, and **Reset all data**.
+6. **Put today's number on the home screen (Pro).** Settings → Pro unlocks the widget for whatever
+   you want to pay: three one-time amounts that all unlock the same thing. Once it's unlocked,
+   **Add widget to home screen** places it, or add it from the launcher's widget list. Its **+**
+   button opens straight into Add expense.
 
 The morning reminder is a notification with today's number, for example **Today you can spend
 $73.86** with *$960.21 left this month · 13 days left* underneath.
@@ -152,16 +169,23 @@ JavaScript as `window.Android`:
 | Call | When the UI calls it | What the Java side does |
 | ---- | -------------------- | ----------------------- |
 | `setSystemBars(bar, nav, light)` | The theme changes | Colours the status and navigation bars to match the page |
-| `syncData(json)` | After every save | Keeps a copy of the budget, currency and this month's expenses for the notification |
+| `syncData(json)` | After every save | Keeps a copy of the data for the notification and the widget, and redraws the widget |
 | `setReminder(enabled, hour, minute)` | Reminder settings change | Schedules or cancels the daily alarm, and asks for notification permission on Android 13+ |
 | `testReminder()` | **Send test notification** is tapped | Shows the notification immediately |
+| `sdk()` | At startup | Returns the Android version, so **Widget colours** only shows on Android 12+ |
+| `takeLaunchAction()` | At startup | Returns what the widget opened the app for (`'add'`, `'pro'`), once |
+| `proState()` | At startup | Returns the Pro state: unlocked or not, prices, pending payments |
+| `buyPro(productId)` | An amount is tapped in the Pro dialog | Opens Google Play's purchase sheet |
+| `canAddWidget()` / `addWidget()` | **Add widget to home screen** | Asks the launcher to place the widget (it confirms with the user) |
+| `debugTogglePro()` | The debug-build button in the Pro dialog | Locks or unlocks Pro without a purchase |
 
 In the other direction, Java calls `window.handleBack()` when the back button is pressed (the UI
 closes a sheet or settings, or switches back to the Budget tab, and returns `true`; when there's
-nothing left to close it returns `false` and the app exits), and
-`window.onReminderPermission(granted)` after the permission prompt. Every bridge call in `app.js`
-checks that `window.Android` exists first, which is why the same files run unchanged in a desktop
-browser.
+nothing left to close it returns `false` and the app exits),
+`window.onReminderPermission(granted)` after the permission prompt, `window.onPro(state)` when
+purchases or prices change, and `window.onLaunchAction(action)` when the widget opens the app while
+it's already running. Every bridge call in `app.js` checks that `window.Android` exists first, which
+is why the same files run unchanged in a desktop browser.
 
 ### Storage
 
@@ -173,17 +197,39 @@ All state is a single JSON object in `localStorage` under `dailyBudget.v1`:
   currency: '$',
   expenses: [{ id, ts, day: '2026-09-18', amount: 12.8, note: 'Lunch' }],
   since: '2026-09-01',          // first tracked day, used by the calendar
-  theme: 'dark',                // 'dark' | 'light' | 'system'
+  theme: 'dark',                // 'dark' | 'amoled' | 'light' | 'system'
+  widgetColors: 'app',          // 'app' | 'wallpaper' (Material You, Android 12+)
   reminder: { enabled: true, time: '08:00' },
 }
 ```
 
-Expenses older than 12 months are pruned at startup. The morning notification can't read the
-WebView's storage without opening the app, so `syncData` also keeps this month's numbers in Android
-`SharedPreferences`. [`Reminder.java`](app/src/main/java/com/aimbire/dailybudget/Reminder.java)
-recomputes today's allowance from that copy (`buildMessage`), and
+Expenses older than 12 months are pruned at startup. The morning notification and the widget can't
+read the WebView's storage without opening the app, so `syncData` also keeps a copy in Android
+`SharedPreferences`: the budget, currency, theme settings and the last two months' expenses (the
+widget's week strip can reach back into last month).
+[`Budget.java`](app/src/main/java/com/aimbire/dailybudget/Budget.java) is the Java copy of
+`Budget.compute` that both use, and
 [`RescheduleReceiver`](app/src/main/java/com/aimbire/dailybudget/RescheduleReceiver.java) re-arms the
-alarm after a reboot, an app update or a clock change.
+alarm and redraws the widget after a reboot, an app update or a clock change.
+
+### The widget and Pro
+
+[`BudgetWidget`](app/src/main/java/com/aimbire/dailybudget/BudgetWidget.java) is one widget with four
+layouts, picked by size: just the number (2×1), a ring that empties as you spend today's allowance
+(2×2), the number with tomorrow's allowance and a quick-add button (4×1), and the same with the
+last seven days in calendar colours (4×2). On Android 12+ the launcher switches layouts as the
+widget is resized; older versions pick one from the size the launcher reports.
+
+Its colours follow the app's theme. With **Same as phone** on Android 12+, the launcher switches
+between the light and dark colours itself when dark mode changes. **Widget colours → From your
+wallpaper** uses the system's Material You colour resources instead, so the widget follows the
+wallpaper. It redraws when the app saves, when Pro changes, and just after midnight.
+
+[`Pro`](app/src/main/java/com/aimbire/dailybudget/Pro.java) sells three one-time products
+(`pro_small`, `pro_medium`, `pro_large`), and owning any of them unlocks the widget. Google Play
+Billing runs through the Play Store app on the device, so there's no server. The unlock is cached
+in `SharedPreferences` for the widget and re-checked against Play every time the app resumes, so a
+refund locks it again. Without Pro, the widget shows a locked placeholder that opens the Pro dialog.
 
 ### Project layout
 
@@ -192,13 +238,17 @@ app/src/main/assets/www/          The UI: plain HTML, CSS and JavaScript, no bui
   index.html                      Tabs, settings page and dialogs
   budget.js                       The budget math (pure functions, no DOM)
   app.js                          Rendering, storage, settings and the bridge calls
-  style.css                       Dark and light themes as CSS custom properties
+  style.css                       Dark, AMOLED and light themes as CSS custom properties
 app/src/main/java/com/aimbire/dailybudget/
   MainActivity.java               Full-screen WebView, system bars, back button, JS bridge
+  Budget.java                     Java copy of the budget math, and the synced data it reads
   Reminder.java                   Morning notification: scheduling and message text
   ReminderReceiver.java           Shows the notification and arms the next one
   RescheduleReceiver.java         Re-arms the alarm after a reboot, update or clock change
-app/src/main/res/                 App name, launcher and notification icons, window colours
+  BudgetWidget.java               Home-screen widget: layouts by size, colours, midnight refresh
+  Pro.java                        Pay-what-you-want unlock through Google Play Billing
+app/src/main/res/                 Icons, window colours, and the widget's layouts and shapes
+app/src/debug/                    Debug builds only: the widget preview screen
 docs/                             Privacy policy, release steps and README screenshots
 store/                            Google Play listing graphics and the HTML they're rendered from
 tools/                            Desktop preview server and release scripts
@@ -214,24 +264,28 @@ Some starting points if you fork it:
   [`res/values/strings.xml`](app/src/main/res/values/strings.xml). With its own application ID,
   your build can be installed next to the Play Store version.
 - **Restyle it.** The UI colours are CSS custom properties at the top of
-  [`style.css`](app/src/main/assets/www/style.css): `:root` for the dark theme and
+  [`style.css`](app/src/main/assets/www/style.css): `:root` for the dark theme,
+  `:root[data-theme="amoled"]` for AMOLED black (it only overrides the backgrounds and lines) and
   `:root[data-theme="light"]` for the light one. The system bars pick up `--bg` and `--surface`
   automatically. The window background shown before the page loads and the notification accent are in
   [`res/values/styles.xml`](app/src/main/res/values/styles.xml), and the icons are vector drawables
   in `res/drawable/`.
-- **Change the math.** Edit `Budget.compute` in `budget.js`. The notification computes the same
-  numbers in Java (`Reminder.buildMessage`), so change it there too. Ideas: weekly or payday-to-payday
+- **Change the math.** Edit `Budget.compute` in `budget.js`. The notification and the widget
+  compute the same numbers in Java (`Budget.compute` in `Budget.java`), so change it there too.
+  Ideas: weekly or payday-to-payday
   periods instead of calendar months, carrying leftovers into next month, setting aside a savings
   goal before the daily number is worked out.
 - **Change what's stored.** If you change the shape of the saved data, migrate it in `load()` in
-  `app.js` or bump `STORAGE_KEY`, so existing installs don't break. If the notification needs the new
-  fields, add them to `syncNative()` as well.
+  `app.js` or bump `STORAGE_KEY`, so existing installs don't break. If the notification or the
+  widget needs the new fields, add them to `syncNative()` as well.
 - **Move it to another platform.** The web UI doesn't depend on Android. A different shell (an iOS
   `WKWebView`, Electron, a PWA) only has to provide the bridge calls it needs, and can skip the rest.
 - **Publish your own build.** [docs/RELEASING.md](docs/RELEASING.md) covers the upload key,
-  versioning and the release bundle. The store graphics in `store/` and the
+  versioning, the Pro products and the release bundle. The store graphics in `store/` and the
   [privacy policy](docs/privacy-policy.html) belong to this app, including its contact address, so
   replace them with your own.
+- **Make the widget free.** Have `Pro.isPro` return `true`, or drop `Pro.java` and the billing
+  dependency altogether if you don't sell anything.
 
 The helper scripts in `tools/` and `store/` are PowerShell, written for Windows. Gradle and the
 browser preview work on any platform.
@@ -243,20 +297,28 @@ Issues and pull requests are welcome.
 - **Bugs:** for a wrong number, include the monthly budget, the date and the expenses that produce
   it.
 - **Keep pull requests small and focused,** and say how you tested them.
-- **Keep it dependency-free.** No frameworks, packages or build step in the UI, and only the Android
-  framework in Java. Staying small is the point of this repository. If your idea needs more than
-  that, a fork is a great home for it.
-- **Formula changes go in both places:** `budget.js` and `Reminder.buildMessage`.
+- **Keep it dependency-free.** No frameworks, packages or build step in the UI, and in Java only the
+  Android framework plus the Play Billing Library for Pro. Staying small is the point of this
+  repository. If your idea needs more than that, a fork is a great home for it.
+- **Formula changes go in both places:** `budget.js` and `Budget.java`.
 - **Preview UI changes in a desktop browser.** Test on a device or emulator for anything that
-  touches notifications, system bars or the back button.
+  touches notifications, the widget, system bars or the back button.
 
 ## Privacy
 
 The manifest doesn't request the `INTERNET` permission, so the app can't send data anywhere. There's
 no account, analytics or ads. Everything is stored on the device, in the WebView's `localStorage`
-plus the `SharedPreferences` copy used for the notification. **Reset all data** in Settings or
-uninstalling the app deletes it. Android's `allowBackup` is left on, so the user's own device backup
-may include it. See the full [privacy policy](docs/privacy-policy.html).
+plus the `SharedPreferences` copy used for the notification and the widget. **Reset all data** in
+Settings or uninstalling the app deletes it. Android's `allowBackup` is left on, so the user's own
+device backup may include it. See the full [privacy policy](docs/privacy-policy.html).
+
+Purchases are handled by Google Play. The Play Billing Library would normally also send its own usage
+logs to Google, which is what adds `INTERNET` to an app. [`app/build.gradle`](app/build.gradle)
+leaves out the part that sends them (the library skips logging without it), and the manifest
+removes `INTERNET` in case another library asks for it. The library still adds
+`ACCESS_NETWORK_STATE`, which only lets an app check whether the phone is online. After upgrading
+the library, check the merged manifest (`app/build/intermediates/merged_manifest/`) for new
+permissions.
 
 ## License
 

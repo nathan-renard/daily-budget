@@ -3,7 +3,11 @@
         <item name="android:windowBackground">@color/bg</item>
         <item name="android:statusBarColor">@color/bg</item>
         <item name="android:navigationBarColor">@color/surface</item>
+        <!-- The WebView's prefers-color-scheme follows this (Android 13+), not the phone's
+             dark mode, so "Same as phone" needs it to track day and night. -->
+        <item name="android:isLightTheme">@bool/light_mode</item>
     </style>
+    <bool name="light_mode">true</bool>
     <color name="bg">#111111</color>
     <color name="accent">#004225</color>
     <color name="surface">#1b1b1b</color>

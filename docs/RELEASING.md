@@ -36,6 +36,38 @@ This runs `gradlew.bat bundleRelease` and copies the result to
 Console, for example under **Testing → Internal testing → Create release**. Play App Signing
 re-signs it with the app signing key that Google holds.
 
+## Pro (in-app products)
+
+Pro is pay what you want: three one-time products, any of which unlocks the widget. Set them up
+once in Play Console.
+
+1. **Payments profile.** Selling anything needs a merchant account: Play Console → Settings →
+   Payments profile.
+2. **Upload a build with billing first.** Play Console only lets you create products after an app
+   bundle that includes the Play Billing Library has been uploaded (an internal testing release is
+   enough).
+3. **Create the products** under Monetize with Play → Products → One-time products, with exactly
+   these IDs, cheapest first:
+
+   | Product ID   | Name in the app | Suggested price |
+   | ------------ | --------------- | --------------- |
+   | `pro_small`  | Small           | $1.99           |
+   | `pro_medium` | Medium          | $4.99           |
+   | `pro_large`  | Large           | $9.99           |
+
+   Activate each one. Prices in other currencies can be converted automatically.
+4. **Signature check.** Copy the Base64 public key from Monetize with Play → Monetization setup →
+   Licensing into `PUBLIC_KEY` in
+   [`Pro.java`](../app/src/main/java/com/aimbire/dailybudget/Pro.java). It isn't secret. While it's
+   empty, purchases are trusted without checking their signature.
+5. **Test.** Add your Google account under Settings → License testing, then install the app from the
+   internal testing track. Test purchases use test cards and aren't charged. A purchase you make
+   can be refunded from Order management, after which the app locks Pro again the next time it
+   resumes.
+
+After upgrading `com.android.billingclient:billing` in `app/build.gradle`, check that the merged
+manifest still has no `INTERNET` permission (see the Privacy section of the README).
+
 ## Store listing graphics
 
 `store/listing/` holds the Play Store icon (512×512), the feature graphic (1024×500) and the phone
@@ -53,4 +85,5 @@ The script needs Microsoft Edge installed and serves the repository on port 8766
 ## Privacy policy
 
 [`privacy-policy.html`](privacy-policy.html) is the app's privacy policy. If a change affects
-permissions or how data is stored, update the policy and its "Last updated" date.
+permissions or how data is stored, update the policy and its "Last updated" date. Keep Play
+Console's Data safety form in step with it, including how Pro purchases are handled.
