@@ -300,9 +300,10 @@ public class MainActivity extends Activity {
         });
     }
 
-    /** Android 12 and below. */
+    /** Android 12 and below. On 13+, back gestures go to the callback registered in onCreate. */
     @Override
     @SuppressWarnings("deprecation")
+    @SuppressLint("GestureBackNavigation") // the lint check doesn't see that callback
     public void onBackPressed() {
         handleBack();
     }

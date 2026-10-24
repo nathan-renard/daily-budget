@@ -1,0 +1,7 @@
+<resources>
+    <style name="AppTheme" parent="Base.AppTheme">
+        <!-- The WebView's prefers-color-scheme follows this (Android 13+), not the phone's
+             dark mode, so "Same as phone" needs it to track day and night. -->
+        <item name="android:isLightTheme">@bool/light_mode</item>
+    </style>
+</resources>
