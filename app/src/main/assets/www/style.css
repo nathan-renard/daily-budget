@@ -176,14 +176,16 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .cal-day.over span { background: var(--over); color: #fff; }
 .cal-day.today span { border-color: var(--accent-text); color: var(--text); }
 .cal-day.today.over span { color: #fff; }
+.cal-day.gone span { border: 1.5px dashed var(--muted); }
 .cal-day.selected span { outline: 2px solid var(--muted); outline-offset: 2px; }
 
-.legend { display: flex; justify-content: center; gap: 16px; margin: 20px 0 12px; color: var(--muted); font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 20px 0 12px; color: var(--muted); font-size: 12px; }
 .legend span { display: flex; align-items: center; gap: 6px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .dot.ok { background: var(--ok); }
 .dot.over { background: var(--over); }
 .dot.today { border: 1.5px solid var(--accent-text); }
+.dot.gone { border: 1.5px dashed var(--muted); }
 #dayDetail { text-align: center; min-height: 18px; }
 
 /* ---- Bottom navigation -------------------------------------------------- */

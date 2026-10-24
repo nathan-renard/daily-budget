@@ -198,12 +198,16 @@ public class BudgetWidget extends AppWidgetProvider {
             }
         }
 
-        /** Within budget / over / not tracked, as on the Calendar tab. */
+        /**
+         * Within budget (0) / over (1) / nothing spent after the month's money ran out (2, not
+         * scored) / not tracked (-1), as on the Calendar tab.
+         */
         int status(LocalDate date) {
             String key = date.toString();
             if (data.budget <= 0 || data.since == null || key.compareTo(data.since) < 0) return -1;
             Budget.Day d = Budget.compute(data, date);
-            return d.spentToday > d.dailyAllowance + 0.005 ? 1 : 0;
+            if (d.spentToday > d.dailyAllowance + 0.005) return 1;
+            return d.monthRemaining + d.spentToday < 0.005 ? 2 : 0;
         }
     }
 
@@ -272,6 +276,11 @@ public class BudgetWidget extends AppWidgetProvider {
                 rv.setViewVisibility(DAY_DOT[i], View.VISIBLE);
                 c.look.tint(rv, DAY_DOT[i], status == 1 ? Look.OVER : Look.OK);
                 rv.setTextColor(DAY_NUM[i], Color.WHITE);
+            } else if (status == 2 && !isToday) {
+                rv.setImageViewResource(DAY_DOT[i], R.drawable.widget_dot_dashed);
+                rv.setViewVisibility(DAY_DOT[i], View.VISIBLE);
+                c.look.tint(rv, DAY_DOT[i], Look.MUTED);
+                c.look.text(rv, DAY_NUM[i], Look.MUTED);
             } else if (isToday) {
                 rv.setImageViewResource(DAY_DOT[i], R.drawable.widget_dot_outline);
                 rv.setViewVisibility(DAY_DOT[i], View.VISIBLE);
@@ -292,7 +301,7 @@ public class BudgetWidget extends AppWidgetProvider {
         int judged = 0;
         for (int day = 1; day < c.today.getDayOfMonth(); day++) {
             int status = c.status(c.today.withDayOfMonth(day));
-            if (status >= 0) judged++;
+            if (status == 0 || status == 1) judged++;
             if (status == 0) ok++;
         }
         rv.setTextViewText(R.id.foot_right, d.daysLeft + (d.daysLeft == 1 ? " day left" : " days left")

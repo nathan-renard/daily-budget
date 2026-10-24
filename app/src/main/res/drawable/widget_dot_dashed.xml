@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A day with nothing spent after the month's money ran out, on the week strip. Transparent
+     fill for the same reason as widget_dot_outline. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#00000000" />
+    <stroke android:width="1.5dp" android:color="#ffffff" android:dashWidth="3dp" android:dashGap="2dp" />
+</shape>

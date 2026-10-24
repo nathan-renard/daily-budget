@@ -253,16 +253,19 @@
   }
 
   // ---- Calendar tab ------------------------------------------------------
-  // A day is "ok" if what was spent that day stayed within that day's allowance.
+  // A day is "ok" if what was spent that day stayed within that day's allowance. Once the
+  // month's money is gone the allowance is 0, so a day with nothing spent is "gone" (not
+  // scored) rather than "ok": the score must not say on budget while the month is over.
   function dayStatus(date, now) {
     const key = Budget.dayKey(date);
     const s = Budget.compute(state.budget, state.expenses, date);
     const over = s.spentToday > s.dailyAllowance + 0.005;
+    const gone = s.monthRemaining + s.spentToday < 0.005; // nothing left when the day began
     const isToday = key === Budget.dayKey(now);
     const tracked = state.budget > 0 && state.since && key >= state.since;
     let status = 'future';
     if (tracked && isToday) status = over ? 'over' : 'pending';
-    else if (tracked && key < Budget.dayKey(now)) status = over ? 'over' : 'ok';
+    else if (tracked && key < Budget.dayKey(now)) status = over ? 'over' : gone ? 'gone' : 'ok';
     else if (key < Budget.dayKey(now)) status = 'untracked';
     return { key, status, isToday, spent: s.spentToday, allowance: s.dailyAllowance };
   }
@@ -288,6 +291,7 @@
 
     let ok = 0;
     let judged = 0;
+    let anyGone = false;
     const total = Budget.daysInMonth(now);
     for (let d = 1; d <= total; d++) {
       const date = new Date(now.getFullYear(), now.getMonth(), d);
@@ -296,6 +300,7 @@
         judged++;
         if (info.status === 'ok') ok++;
       }
+      if (info.status === 'gone') anyGone = true;
 
       const btn = document.createElement('button');
       btn.className = 'cal-day ' + info.status +
@@ -314,9 +319,12 @@
         const label = date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
         $('dayDetail').textContent = info.status === 'future' || info.status === 'untracked'
           ? label + ' · no data'
-          : label + ' · spent ' + money(info.spent) + ' of ' + money(info.allowance);
+          : info.status === 'gone'
+            ? label + ' · no budget left for the month'
+            : label + ' · spent ' + money(info.spent) + ' of ' + money(info.allowance);
       }
     }
+    $('legendGone').hidden = !anyGone;
     if (!selectedDay) $('dayDetail').textContent = 'Tap a day for details';
     $('calendarScore').textContent = judged ? ok + ' of ' + judged + ' days on budget' : '';
   }
