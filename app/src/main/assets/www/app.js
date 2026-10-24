@@ -522,6 +522,7 @@
   function openPro() {
     renderPro();
     openSheet('proSheet');
+    if (hasPro) window.Android.refreshPro(); // retries Google Play if it wasn't available
   }
 
   // Called by the Android wrapper whenever purchases or prices change.

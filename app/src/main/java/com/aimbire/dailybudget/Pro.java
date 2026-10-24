@@ -82,13 +82,21 @@ final class Pro {
                 .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
                 .enableAutoServiceReconnection()
                 .build();
+        connect();
+    }
+
+    /**
+     * Auto-reconnection only covers a lost connection, not a failed setup, so refresh()
+     * retries this: Play can become usable later (signed in, Play Store updated).
+     */
+    private void connect() {
+        status = "connecting"; // not published: a retry keeps the last answer on screen
         client.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(BillingResult result) {
                 if (result.getResponseCode() == BillingResponseCode.OK) {
                     status = "ready";
-                    queryProducts();
-                    refresh();
+                    refresh(); // also loads the prices
                 } else {
                     Log.d(TAG, "Billing unavailable: " + result.getDebugMessage());
                     status = "unavailable";
@@ -152,9 +160,16 @@ final class Pro {
                 });
     }
 
-    /** Re-reads what the user owns. Play answers from its cache, so this works offline. */
+    /**
+     * Re-reads what the user owns. Play answers from its cache, so this works offline.
+     * Runs when the app resumes and when the Pro sheet opens, and retries what failed before.
+     */
     void refresh() {
-        if (!"ready".equals(status)) return;
+        if (!"ready".equals(status)) {
+            if ("unavailable".equals(status)) connect(); // which refreshes once it's ready
+            return;
+        }
+        if (details.isEmpty()) queryProducts(); // none loaded yet, or that query failed
         client.queryPurchasesAsync(
                 QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build(),
                 (result, purchases) -> {

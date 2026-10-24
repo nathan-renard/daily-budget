@@ -229,6 +229,12 @@ public class MainActivity extends Activity {
             return proState;
         }
 
+        /** The Pro sheet opened: retry Google Play if it wasn't available. */
+        @JavascriptInterface
+        public void refreshPro() {
+            runOnUiThread(pro::refresh);
+        }
+
         @JavascriptInterface
         public void buyPro(String productId) {
             pro.buy(productId);
