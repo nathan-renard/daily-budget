@@ -25,6 +25,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -46,6 +47,8 @@ public class MainActivity extends Activity {
     private volatile String proState;
     /** Set on the UI thread, taken once on the JS bridge thread. */
     private final AtomicReference<String> launchAction = new AtomicReference<>();
+    /** The same for a declined notification prompt (see onRequestPermissionsResult). */
+    private final AtomicBoolean notificationsDenied = new AtomicBoolean();
 
     private int barColor = Color.parseColor("#111111");
     private int navColor = Color.parseColor("#1b1b1b");
@@ -223,6 +226,12 @@ public class MainActivity extends Activity {
             return launchAction.getAndSet(null);
         }
 
+        /** Whether the notification prompt was declined and the page hasn't heard yet, once. */
+        @JavascriptInterface
+        public boolean takeNotificationsDenied() {
+            return notificationsDenied.getAndSet(false);
+        }
+
         /** {pro, status, pending, debug, products: [{id, price, owned}]} */
         @JavascriptInterface
         public String proState() {
@@ -270,12 +279,18 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * After the activity is recreated this can run before the page has loaded, so a denial
+     * waits in notificationsDenied for the page's boot code (as launchAction does).
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
-        if (requestCode != REQUEST_NOTIFICATIONS) return;
-        boolean granted = results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED;
-        webView.evaluateJavascript(
-                "window.onReminderPermission && onReminderPermission(" + granted + ")", null);
+        // No results: cancelled, e.g. a recreated page asked again while the prompt was still up.
+        if (requestCode != REQUEST_NOTIFICATIONS || results.length == 0) return;
+        if (results[0] == PackageManager.PERMISSION_GRANTED) return;
+        notificationsDenied.set(true);
+        webView.evaluateJavascript("window.onReminderPermission"
+                + " && Android.takeNotificationsDenied() && onReminderPermission(false)", null);
     }
 
     /** Let the web UI close sheets / return to the Budget tab before exiting. */

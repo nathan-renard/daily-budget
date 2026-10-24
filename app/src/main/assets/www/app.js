@@ -733,7 +733,9 @@
   save();
   applyTheme();
   applyWidgetColors();
-  applyReminder();
+  // Declined while the page was reloading (the activity was recreated)? Else this would ask again.
+  if (hasBridge && window.Android.takeNotificationsDenied()) window.onReminderPermission(false);
+  else applyReminder();
   renderPro();
   moveIndicator(false);
   render();
