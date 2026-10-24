@@ -205,7 +205,8 @@
 
   // ---- Expenses tab ------------------------------------------------------
   function renderExpenses(now) {
-    const items = monthExpenses(Budget.monthKey(now)).sort((a, b) => b.ts - a.ts);
+    // By day first: after a time-zone change, time order alone can split a day's group.
+    const items = monthExpenses(Budget.monthKey(now)).sort((a, b) => b.day.localeCompare(a.day) || b.ts - a.ts);
     const total = items.reduce((sum, e) => sum + e.amount, 0);
     $('expenseTotal').textContent = items.length ? money(total) + ' total' : '';
     $('emptyList').hidden = items.length > 0;
@@ -215,7 +216,10 @@
     let group = null;
     for (const e of items) {
       if (!group || group.day !== e.day) {
-        const d = new Date(e.ts);
+        // Head the group with the day it counts toward, not the timestamp's local date.
+        // new Date('YYYY-MM-DD') would read it as UTC, so build the local date.
+        const [y, m, day] = e.day.split('-').map(Number);
+        const d = new Date(y, m - 1, day);
         const wrap = document.createElement('div');
         wrap.className = 'group';
         wrap.innerHTML = '<div class="group-head"><span></span><span></span></div><ul class="list"></ul>';
