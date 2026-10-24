@@ -238,8 +238,9 @@
         '<span class="item-amount"></span>' +
         '<button class="del" aria-label="Delete">×</button>';
       li.querySelector('.item-note').textContent = e.note || 'Expense';
+      // The locale's short time: "1:18 AM" in en-US, still "01:18" in 24-hour locales like pt-BR.
       li.querySelector('.item-time').textContent =
-        new Date(e.ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        new Date(e.ts).toLocaleTimeString(undefined, { timeStyle: 'short' });
       li.querySelector('.item-amount').textContent = money(e.amount);
       li.querySelector('.del').addEventListener('click', async () => {
         if (!(await confirmDialog('Delete this expense?'))) return;
