@@ -662,8 +662,15 @@
     openEdit('budget', true);
   });
 
-  // Add expense
-  $('addBtn').addEventListener('click', () => openSheet('addSheet', 'amountInput'));
+  // Add expense. Each opening starts empty, without the last attempt's validity message.
+  function openAdd() {
+    $('amountInput').value = '';
+    $('amountInput').setCustomValidity('');
+    $('noteInput').value = '';
+    openSheet('addSheet', 'amountInput');
+  }
+
+  $('addBtn').addEventListener('click', openAdd);
 
   $('addForm').addEventListener('submit', (ev) => {
     ev.preventDefault();
@@ -678,8 +685,6 @@
       note: $('noteInput').value.trim(),
     });
     save();
-    $('amountInput').value = '';
-    $('noteInput').value = '';
     closeSheets();
     render();
   });
@@ -693,7 +698,7 @@
     if (action === 'add') {
       closeSettings();
       showTab('budget');
-      openSheet('addSheet', 'amountInput');
+      openAdd();
     } else if (action === 'pro') {
       openSettings();
       openPro();
