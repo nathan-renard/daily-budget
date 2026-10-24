@@ -264,6 +264,8 @@ button { font: inherit; cursor: pointer; }
 .primary { background: var(--accent); color: #fff; border: 0; }
 .primary:active { background: var(--accent-hi); }
 .ghost { background: none; color: var(--muted); border: 1px solid var(--line); }
+.primary.danger { background: var(--over); }
+.primary.danger:active { opacity: .85; }
 
 .sheet-backdrop {
   position: fixed; inset: 0; z-index: 10;

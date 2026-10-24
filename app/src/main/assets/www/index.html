@@ -229,6 +229,17 @@
     </div>
   </div>
 
+  <!-- Delete confirmation (expense / reset all data) -->
+  <div class="sheet-backdrop dialog" id="confirmSheet" hidden>
+    <div class="sheet" role="alertdialog" aria-describedby="confirmText">
+      <p id="confirmText"></p>
+      <div class="sheet-actions">
+        <button type="button" class="ghost" data-close>Cancel</button>
+        <button type="button" class="primary danger" id="confirmOk">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script src="budget.js"></script>
   <script src="app.js"></script>
 </body>

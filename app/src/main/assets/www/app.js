@@ -178,8 +178,8 @@
       li.querySelector('.item-time').textContent =
         new Date(e.ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
       li.querySelector('.item-amount').textContent = money(e.amount);
-      li.querySelector('.del').addEventListener('click', () => {
-        if (!confirm('Delete this expense?')) return;
+      li.querySelector('.del').addEventListener('click', async () => {
+        if (!(await confirmDialog('Delete this expense?'))) return;
         state.expenses = state.expenses.filter((x) => x.id !== e.id);
         save();
         render();
@@ -315,6 +315,7 @@
         closed = true;
       }
     }
+    if (confirmDone) confirmDone(false); // Cancel, Back or a tap outside
     document.activeElement && document.activeElement.blur();
     return closed;
   }
@@ -325,6 +326,23 @@
   for (const backdrop of document.querySelectorAll('.sheet-backdrop')) {
     backdrop.addEventListener('click', (ev) => { if (ev.target === backdrop) closeSheets(); });
   }
+
+  // In-page stand-in for window.confirm(), which the WebView shows as a stock
+  // 'The page at "file://" says' dialog. Resolves true only on Delete.
+  let confirmDone = null;
+
+  function confirmDialog(message) {
+    $('confirmText').textContent = message;
+    openSheet('confirmSheet');
+    return new Promise((resolve) => {
+      confirmDone = (ok) => { confirmDone = null; resolve(ok); };
+    });
+  }
+
+  $('confirmOk').addEventListener('click', () => {
+    if (confirmDone) confirmDone(true);
+    closeSheets();
+  });
 
   // ---- Theme -------------------------------------------------------------
   const lightQuery = window.matchMedia('(prefers-color-scheme: light)');
@@ -573,8 +591,8 @@
     render();
   });
 
-  $('resetBtn').addEventListener('click', () => {
-    if (!confirm('Delete your budget and all expenses? This cannot be undone.')) return;
+  $('resetBtn').addEventListener('click', async () => {
+    if (!(await confirmDialog('Delete your budget and all expenses? This cannot be undone.'))) return;
     state.budget = 0;
     state.expenses = [];
     state.since = null;
