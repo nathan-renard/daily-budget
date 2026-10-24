@@ -187,6 +187,20 @@
     $('barFill').style.width = pct + '%';
     $('barFill').classList.toggle('over', s.monthRemaining < 0);
     $('monthSummary').textContent = money(s.spentMonth) + ' of ' + money(state.budget) + ' spent';
+    fitAmounts();
+  }
+
+  // Shrink the headline and the stats row (--fit in style.css) when a long amount is
+  // wider than the screen, so it stays on one line instead of being cut off.
+  function fitAmounts() {
+    for (const el of [$('todayLeft'), document.querySelector('.stats')]) {
+      el.style.removeProperty('--fit');
+      const room = el.parentNode.clientWidth;
+      el.style.whiteSpace = 'nowrap'; // measure it as one line
+      const width = el.scrollWidth;
+      el.style.whiteSpace = '';
+      if (width > room) el.style.setProperty('--fit', Math.floor((room / width) * 100) / 100);
+    }
   }
 
   // ---- Expenses tab ------------------------------------------------------
@@ -339,7 +353,10 @@
     render();
   }
 
-  window.addEventListener('resize', () => moveIndicator(false));
+  window.addEventListener('resize', () => {
+    moveIndicator(false);
+    fitAmounts(); // rotation changes the room
+  });
 
   for (const btn of document.querySelectorAll('.tab')) {
     btn.addEventListener('click', () => showTab(btn.dataset.tab));
