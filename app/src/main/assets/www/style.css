@@ -11,6 +11,8 @@
   --accent-text: #4caf7d;
   --ok: var(--accent-hi);
   --over: #e5534b;
+  /* Delete button fill: darker than --over so its white text keeps 4.5:1, pressed too. */
+  --danger: #c63d36;
   --nav-h: 76px;
   --well-shadow: rgba(0,0,0,.6);
   --backdrop: rgba(0,0,0,.65);
@@ -27,6 +29,7 @@
   --faint: #b3b3ae;
   --accent-text: #0b6b3f;
   --over: #c9403a;
+  --danger: #b3352f;
   --well-shadow: rgba(0,0,0,.12);
   --backdrop: rgba(20,20,20,.35);
   color-scheme: light;
@@ -269,7 +272,7 @@ button { font: inherit; cursor: pointer; }
 .primary { background: var(--accent); color: #fff; border: 0; }
 .primary:active { background: var(--accent-hi); }
 .ghost { background: none; color: var(--muted); border: 1px solid var(--line); }
-.primary.danger { background: var(--over); }
+.primary.danger { background: var(--danger); }
 .primary.danger:active { opacity: .85; }
 
 .sheet-backdrop {
