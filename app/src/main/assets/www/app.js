@@ -76,6 +76,51 @@
     });
   }
 
+  // Money fields are type="text": Android's WebView drops "," from type="number" fields.
+  // Either "." or "," can be the decimal mark, with optional thousands grouping. A single
+  // mark before exactly three digits ("1.500", "1,500") is a decimal only if it is the
+  // phone locale's decimal mark, otherwise it groups thousands.
+  function parseMoney(text) {
+    const decimal = new Intl.NumberFormat().formatToParts(1.5)
+      .find((p) => p.type === 'decimal').value === ',' ? ',' : '.';
+    const invalid = { error: 'Enter a number, like 12' + decimal + '50.' };
+    const grouped = (x) => /^[1-9]\d{0,2}([ .,])\d{3}(\1\d{3})*$/.test(x);
+    const s = text.trim().replace(/\s/g, ' ');
+    if (!s) return { error: 'Enter an amount.' };
+    if (s[0] === '-') return { error: 'The amount can\'t be negative.' };
+    if (!/^[\d., ]+$/.test(s) || !/\d/.test(s)) return invalid;
+
+    let int = s;
+    let frac = '';
+    const last = Math.max(s.lastIndexOf('.'), s.lastIndexOf(','));
+    if (last >= 0) {
+      const mark = s[last];
+      const once = s.indexOf(mark) === last;
+      const both = s.includes(mark === '.' ? ',' : '.');
+      if (once && (both || mark === decimal || !grouped(s))) {
+        int = s.slice(0, last);
+        frac = s.slice(last + 1);
+      }
+    }
+    if ((!/^\d*$/.test(int) && !grouped(int)) || !/^\d*$/.test(frac)) return invalid;
+    if (frac.length > 2) return { error: 'Use at most two decimal places.' };
+    return { value: Number(int.replace(/\D/g, '') + '.' + frac) };
+  }
+
+  // Returns the field's amount, or shows why it isn't valid and returns null.
+  function readMoney(input, min) {
+    const r = parseMoney(input.value);
+    const error = r.error || (r.value < min ? 'Enter at least ' + money(min) + '.' : '');
+    input.setCustomValidity(error);
+    if (error) input.reportValidity();
+    return error ? null : r.value;
+  }
+
+  // A validity message would block every later submit, so drop it once the field changes.
+  for (const input of [$('amountInput'), $('editInput')]) {
+    input.addEventListener('input', () => input.setCustomValidity(''));
+  }
+
   function monthExpenses(month) {
     return state.expenses.filter((e) => e.day.startsWith(month));
   }
@@ -545,13 +590,13 @@
     editing = field;
     const input = $('editInput');
     const sheet = $('editSheet');
+    input.setCustomValidity('');
     if (field === 'budget') {
       $('editTitle').textContent = locked ? 'Set your monthly budget' : 'Monthly budget';
       $('editHint').textContent = 'How much are you willing to spend each month? This amount repeats every month.';
-      input.type = 'number';
+      input.type = 'text';
       input.inputMode = 'decimal';
-      input.step = '0.01';
-      input.min = '1';
+      input.removeAttribute('maxlength');
       input.placeholder = 'e.g. 1500';
       input.value = state.budget || '';
     } else {
@@ -559,8 +604,6 @@
       $('editHint').textContent = 'Shown in front of every amount, e.g. $, €, £, R$.';
       input.type = 'text';
       input.inputMode = 'text';
-      input.removeAttribute('step');
-      input.removeAttribute('min');
       input.maxLength = 4;
       input.placeholder = '$';
       input.value = state.currency;
@@ -577,8 +620,8 @@
     ev.preventDefault();
     const raw = $('editInput').value.trim();
     if (editing === 'budget') {
-      const budget = parseFloat(raw);
-      if (!(budget > 0)) return;
+      const budget = readMoney($('editInput'), 1);
+      if (budget === null) return;
       state.budget = Math.round(budget * 100) / 100;
       if (!state.since) state.since = Budget.dayKey(new Date());
     } else {
@@ -607,8 +650,8 @@
 
   $('addForm').addEventListener('submit', (ev) => {
     ev.preventDefault();
-    const amount = parseFloat($('amountInput').value);
-    if (!(amount > 0)) return;
+    const amount = readMoney($('amountInput'), 0.01);
+    if (amount === null) return;
     const now = new Date();
     state.expenses.push({
       id: now.getTime().toString(36) + Math.random().toString(36).slice(2, 6),
