@@ -627,6 +627,7 @@
   // Called by the Android wrapper when the widget opens the app: its + button ('add')
   // or the locked widget ('pro').
   window.onLaunchAction = function (action) {
+    if (!action) return; // null: the boot code below already took it
     if (!state.budget) return; // the first-run budget prompt comes first
     closeSheets();
     if (action === 'add') {

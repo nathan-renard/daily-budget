@@ -25,7 +25,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
-import org.json.JSONObject;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Hosts the bundled web UI (assets/www) in a full-screen WebView.
@@ -44,7 +44,8 @@ public class MainActivity extends Activity {
     private View navSpacer;
     private Pro pro;
     private volatile String proState;
-    private volatile String launchAction;
+    /** Set on the UI thread, taken once on the JS bridge thread. */
+    private final AtomicReference<String> launchAction = new AtomicReference<>();
 
     private int barColor = Color.parseColor("#111111");
     private int navColor = Color.parseColor("#1b1b1b");
@@ -106,7 +107,8 @@ public class MainActivity extends Activity {
             webView.evaluateJavascript("window.onPro && onPro(" + json + ")", null);
         });
         proState = pro.state();
-        if (savedInstanceState == null) launchAction = getIntent().getStringExtra(EXTRA_ACTION);
+        // Not on a restore: the intent that first started us still carries its old action.
+        if (savedInstanceState == null) launchAction.set(getIntent().getStringExtra(EXTRA_ACTION));
 
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
@@ -115,14 +117,19 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** The widget was tapped while the app was already open. */
+    /**
+     * The widget was tapped while the activity existed. After a process death this runs
+     * before the restored page has loaded, so the action waits in launchAction for
+     * whichever comes first: this call on a loaded page, or the page's boot code.
+     */
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         String action = intent.getStringExtra(EXTRA_ACTION);
         if (action != null) {
+            launchAction.set(action);
             webView.evaluateJavascript(
-                    "window.onLaunchAction && onLaunchAction(" + JSONObject.quote(action) + ")", null);
+                    "window.onLaunchAction && onLaunchAction(Android.takeLaunchAction())", null);
         }
     }
 
@@ -213,9 +220,7 @@ public class MainActivity extends Activity {
         /** What the widget asked for when it opened the app ("add", "pro"), once. */
         @JavascriptInterface
         public String takeLaunchAction() {
-            String action = launchAction;
-            launchAction = null;
-            return action;
+            return launchAction.getAndSet(null);
         }
 
         /** {pro, status, pending, debug, products: [{id, price, owned}]} */
