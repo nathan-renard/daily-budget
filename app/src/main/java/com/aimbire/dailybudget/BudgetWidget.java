@@ -120,7 +120,9 @@ public class BudgetWidget extends AppWidgetProvider {
         }
         long next = LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault())
                 .plusMinutes(1).toInstant().toEpochMilli();
-        alarms.set(AlarmManager.RTC, next, pi);
+        // set() lets Android deliver it up to an hour late. 10 minutes is the shortest window
+        // Android 12+ allows without an exact alarm.
+        alarms.setWindow(AlarmManager.RTC, next, 10 * 60 * 1000L, pi);
     }
 
     // ---- What to show -----------------------------------------------------------
