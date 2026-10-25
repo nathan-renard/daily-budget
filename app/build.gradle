@@ -11,41 +11,44 @@ if (keystorePropsFile.exists()) {
 }
 
 android {
-    namespace 'com.aimbire.dailybudget'
-    compileSdk 36
+    namespace = 'com.aimbire.dailybudget'
+    compileSdk = 36
+    // Java only: skip AGP 9's built-in Kotlin, which would add a Kotlin compile step and its own
+    // newer kotlin-stdlib. Billing still brings the kotlin-stdlib it needs.
+    enableKotlin = false
 
     defaultConfig {
-        applicationId 'com.aimbire.dailybudget'
-        minSdk 26
-        targetSdk 36
+        applicationId = 'com.aimbire.dailybudget'
+        minSdk = 26
+        targetSdk = 36
         // Bump versionCode for every upload to Play (it must always increase).
-        versionCode 1
-        versionName '1.0'
+        versionCode = 1
+        versionName = '1.0'
     }
 
     signingConfigs {
         if (keystorePropsFile.exists()) {
             upload {
-                storeFile rootProject.file(keystoreProps['storeFile'])
-                storePassword keystoreProps['storePassword']
-                keyAlias keystoreProps['keyAlias']
-                keyPassword keystoreProps['keyPassword']
+                storeFile = rootProject.file(keystoreProps['storeFile'])
+                storePassword = keystoreProps['storePassword']
+                keyAlias = keystoreProps['keyAlias']
+                keyPassword = keystoreProps['keyPassword']
             }
         }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             // Without keystore.properties, fall back to the debug key so the release APK
             // still installs directly. Play rejects debug-signed bundles.
-            signingConfig keystorePropsFile.exists() ? signingConfigs.upload : signingConfigs.debug
+            signingConfig = keystorePropsFile.exists() ? signingConfigs.upload : signingConfigs.debug
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
