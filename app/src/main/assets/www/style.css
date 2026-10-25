@@ -11,7 +11,8 @@
   --accent-text: #4caf7d;
   --ok: var(--accent-hi);
   --over: #e5534b;
-  /* Delete button fill: darker than --over so its white text keeps 4.5:1, pressed too. */
+  /* Red fill under white text (Delete button, over-budget days): darker than --over so the
+     text keeps 4.5:1, the pressed button too. */
   --danger: #c63d36;
   --nav-h: 76px;
   --well-shadow: rgba(0,0,0,.6);
@@ -28,7 +29,7 @@
   --muted: #6b6b68;
   --faint: #b3b3ae;
   --accent-text: #0b6b3f;
-  --over: #c9403a;
+  --over: #c43d37; /* 4.5:1 on --bg */
   --danger: #b3352f;
   --well-shadow: rgba(0,0,0,.12);
   --backdrop: rgba(20,20,20,.35);
@@ -173,7 +174,7 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 }
 .cal-day.past { color: var(--muted); }
 .cal-day.ok span { background: var(--ok); color: #fff; }
-.cal-day.over span { background: var(--over); color: #fff; }
+.cal-day.over span { background: var(--danger); color: #fff; }
 .cal-day.today span { border-color: var(--accent-text); color: var(--text); }
 .cal-day.today.over span { color: #fff; }
 .cal-day.gone span { border: 1.5px dashed var(--muted); }
@@ -183,7 +184,7 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .legend span { display: flex; align-items: center; gap: 6px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .dot.ok { background: var(--ok); }
-.dot.over { background: var(--over); }
+.dot.over { background: var(--danger); }
 .dot.today { border: 1.5px solid var(--accent-text); }
 .dot.gone { border: 1.5px dashed var(--muted); }
 #dayDetail { text-align: center; min-height: 18px; }
@@ -270,6 +271,8 @@ input {
 input:focus { border-color: var(--accent-hi); }
 
 button { font: inherit; cursor: pointer; }
+/* A long press would select a control's label, as text on a web page. */
+button, .row { user-select: none; }
 .primary, .ghost { border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 600; }
 .primary { background: var(--accent); color: #fff; border: 0; }
 .primary:active { background: var(--accent-hi); }
@@ -364,12 +367,10 @@ button { font: inherit; cursor: pointer; }
 .row .chev { width: 18px; height: 18px; color: var(--muted); flex: none; }
 .row:active .row-label { color: var(--text); }
 .row.disabled { opacity: .4; pointer-events: none; }
-.row-time {
-  width: auto; padding: 0; border: 0; background: none;
-  color: var(--text); font: inherit; font-size: 15px; text-align: right;
-}
-.row-time { -webkit-appearance: none; appearance: none; }
-.row-time::-webkit-calendar-picker-indicator { display: none; }
+/* A time input shows the locale's clock, ignoring the phone's 12/24-hour setting, so the time
+   is shown in #valTime and the input lies invisibly on top of it, still opening the picker. */
+.row-time { position: relative; }
+.row-time input { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; opacity: 0; }
 .row-note { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
 .row-note:empty { display: none; }
 

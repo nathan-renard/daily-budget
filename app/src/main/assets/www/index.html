@@ -159,13 +159,15 @@
         <svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>
         <span>Notifications</span>
       </div>
+      <!-- autocomplete="off": else a recreated activity's WebView puts back the values these
+           had when it was saved, over the ones app.js just set from the saved state. -->
       <label class="row">
         <span class="row-label">Morning reminder</span>
-        <span class="switch"><input type="checkbox" id="reminderToggle"><span></span></span>
+        <span class="switch"><input type="checkbox" id="reminderToggle" autocomplete="off"><span></span></span>
       </label>
       <label class="row" id="rowTime">
         <span class="row-label">Reminder time</span>
-        <input class="row-time" id="reminderTime" type="time" value="08:00">
+        <span class="row-value row-time"><span id="valTime"></span><input id="reminderTime" type="time" value="08:00" autocomplete="off"></span>
         <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
       </label>
       <button class="row" id="reminderTest">

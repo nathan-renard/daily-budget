@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.Insets;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -218,6 +219,12 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public int sdk() {
             return Build.VERSION.SDK_INT;
+        }
+
+        /** The phone's 12/24-hour setting, which the page's locale doesn't reflect. */
+        @JavascriptInterface
+        public boolean is24Hour() {
+            return DateFormat.is24HourFormat(MainActivity.this);
         }
 
         /** What the widget asked for when it opened the app ("add", "pro"), once. */

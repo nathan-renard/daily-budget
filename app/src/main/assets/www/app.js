@@ -76,6 +76,17 @@
     });
   }
 
+  // The locale's short time ("1:18 PM" in en-US, "13:18" in pt-BR), but 12- or 24-hour as set
+  // on the phone: a US phone can be set to 24-hour, and the locale alone doesn't know that.
+  function timeFormat() {
+    const options = { timeStyle: 'short' };
+    if (window.Android && window.Android.is24Hour) {
+      if (window.Android.is24Hour()) options.hourCycle = 'h23';
+      else options.hour12 = true; // the locale's 12-hour clock: 0:05 in Japanese, 12:05 in English
+    }
+    return new Intl.DateTimeFormat(undefined, options);
+  }
+
   // Money fields are type="text": Android's WebView drops "," from type="number" fields.
   // Either "." or "," can be the decimal mark, with optional thousands grouping. A single
   // mark before exactly three digits ("1.500", "1,500") is a decimal only if it is the
@@ -213,6 +224,7 @@
 
     const container = $('expenseGroups');
     container.innerHTML = '';
+    const times = timeFormat();
     let group = null;
     for (const e of items) {
       if (!group || group.day !== e.day) {
@@ -238,9 +250,7 @@
         '<span class="item-amount"></span>' +
         '<button class="del" aria-label="Delete">×</button>';
       li.querySelector('.item-note').textContent = e.note || 'Expense';
-      // The locale's short time: "1:18 AM" in en-US, still "01:18" in 24-hour locales like pt-BR.
-      li.querySelector('.item-time').textContent =
-        new Date(e.ts).toLocaleTimeString(undefined, { timeStyle: 'short' });
+      li.querySelector('.item-time').textContent = times.format(e.ts);
       li.querySelector('.item-amount').textContent = money(e.amount);
       li.querySelector('.del').addEventListener('click', async () => {
         if (!(await confirmDialog('Delete this expense?'))) return;
@@ -562,10 +572,12 @@
     applyReminder();
   });
   $('reminderTime').addEventListener('change', () => {
-    if (!$('reminderTime').value) return;
+    // Clear in the picker: keep the time the reminder still uses, which #valTime still shows.
+    if (!$('reminderTime').value) { $('reminderTime').value = state.reminder.time; return; }
     state.reminder.time = $('reminderTime').value;
     save();
     applyReminder();
+    renderSettings();
   });
   // Tapping anywhere on the row opens the time picker, not just the value.
   $('rowTime').addEventListener('click', (ev) => {
@@ -589,6 +601,8 @@
   function renderSettings() {
     $('valBudget').textContent = state.budget ? money(state.budget) : 'Not set';
     $('valCurrency').textContent = state.currency;
+    const [h, m] = state.reminder.time.split(':').map(Number);
+    $('valTime').textContent = timeFormat().format(new Date(2000, 0, 1, h, m));
   }
 
   function openSettings() {
@@ -743,7 +757,10 @@
   const launchAction = window.Android && window.Android.takeLaunchAction && window.Android.takeLaunchAction();
   if (launchAction) window.onLaunchAction(launchAction);
 
-  // Re-render when the app comes back to the foreground or the day rolls over.
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+  // Re-render when the app comes back to the foreground (the phone's 12/24-hour setting may
+  // have changed meanwhile) or the day rolls over.
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) { render(); renderSettings(); }
+  });
   setInterval(render, 60 * 1000);
 })();

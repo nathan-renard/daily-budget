@@ -173,6 +173,7 @@ JavaScript as `window.Android`:
 | `setReminder(enabled, hour, minute)` | Reminder settings change | Schedules or cancels the daily alarm, and asks for notification permission on Android 13+ |
 | `testReminder()` | **Send test notification** is tapped | Shows the notification immediately |
 | `sdk()` | At startup | Returns the Android version, so **Widget colours** only shows on Android 12+ |
+| `is24Hour()` | Times are shown | Returns the phone's 12/24-hour setting, which the locale's time format ignores |
 | `takeLaunchAction()` | At startup | Returns what the widget opened the app for (`'add'`, `'pro'`), once |
 | `proState()` | At startup | Returns the Pro state: unlocked or not, prices, pending payments |
 | `buyPro(productId)` | An amount is tapped in the Pro dialog | Opens Google Play's purchase sheet |
