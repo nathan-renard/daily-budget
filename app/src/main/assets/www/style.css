@@ -358,7 +358,7 @@ button, .row { user-select: none; }
   display: flex; align-items: center; gap: 10px;
   min-height: 52px; padding: 0;
   background: none; border: 0;
-  color: var(--text); text-align: left;
+  color: var(--text); text-align: left; text-decoration: none;
   font: inherit; font-size: 15px;
   cursor: pointer;
 }

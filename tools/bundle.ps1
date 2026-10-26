@@ -16,8 +16,10 @@ try {
 }
 
 $gradle = Get-Content (Join-Path $root 'app\build.gradle') -Raw
-$code = [regex]::Match($gradle, 'versionCode\s+(\d+)').Groups[1].Value
-$name = [regex]::Match($gradle, "versionName\s+'([^']+)'").Groups[1].Value
+# AGP 9 syntax: versionCode = 1, versionName = '1.0' (the '=' is optional for older files).
+$code = [regex]::Match($gradle, 'versionCode\s*=?\s*(\d+)').Groups[1].Value
+$name = [regex]::Match($gradle, "versionName\s*=?\s*'([^']+)'").Groups[1].Value
+if (-not $code -or -not $name) { throw "versionCode / versionName not found in app/build.gradle" }
 
 $dist = Join-Path $root 'dist'
 New-Item -ItemType Directory -Force $dist | Out-Null

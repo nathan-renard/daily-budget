@@ -122,7 +122,8 @@ signatures differ (uninstalling deletes its data). Or give your build its own ap
    a day.
 5. **Adjust settings** with the gear icon: monthly budget, currency symbol (such as $, €, £ or R$),
    theme (dark, AMOLED black, light or same as phone), widget colours (Android 12+), the morning
-   reminder and its time, and **Reset all data**.
+   reminder and its time, a link to the privacy policy (it opens in the browser) and
+   **Reset all data**.
 6. **Put today's number on the home screen (Pro).** Settings → Pro unlocks the widget for whatever
    you want to pay: three one-time amounts that all unlock the same thing. Once it's unlocked,
    **Add widget to home screen** places it, or add it from the launcher's widget list. Its **+**

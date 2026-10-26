@@ -56,7 +56,11 @@ final class Pro {
      * Licensing). Purchases whose signature doesn't match are ignored. Left empty, the
      * check is skipped, which is fine for testing but should be filled in for release.
      */
-    private static final String PUBLIC_KEY = "";
+    private static final String PUBLIC_KEY =
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApWa5Ddw12lWzMzmc+TxhnTLcBzi7GDCh8tPJap6+W3Jw7smtCO9gOw"
+            + "MD1yxGPkrLM9UbUMIAQPx7nS+3q7RUFIVvcam/NcWYH7VU0UCj+Yec5JJg280+8+w/tFnzTwy+GgHxxndKCr1POdp/kQKgIFEP"
+            + "r0mvPecSRCmN+WK9HcpZfQAaKCrj8VWJy2jBNyP0oM8QO6keRs7QdMF68fXUi6DLrNrCAq3KBnG5S4Ac1717cNKOO+vD+YbnKz"
+            + "LDC6bfWY+uHtK5qnUdZ2qfr2REzlpURHcCLHdWgGzGnhrOOw5APSB8uuO99/yedVaB/TWPrCqe4YKggeqptSaCU8MLnQIDAQAB";
 
     private static final String PREFS = "pro";
     private static final String TAG = "DailyBudget";
