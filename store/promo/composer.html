@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- 1920x1080 promo stage. Everything on screen is a pure function of the video time passed to renderAt(t),
      called with increasing t, so render.js can capture it frame by frame. The app itself runs in the
-     iframe (stage.html). -->
+     iframe (stage.html); the two theme phones are more copies of it. -->
 <meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=block">
@@ -17,24 +17,24 @@
     background: radial-gradient(circle, rgba(76,175,125,.5) 0%, rgba(76,175,125,0) 55%); opacity: .3; }
   #flash { position: absolute; inset: 0; background: #fff; opacity: 0; mix-blend-mode: overlay; }
   #stage3d { position: absolute; inset: 0; perspective: 2400px; perspective-origin: 960px 540px; }
-  /* At rest the phone is centred at (1340, 540); the camera moves it from there. */
-  #phone { position: absolute; left: 1114px; top: 74px; width: 452px; height: 932px; border-radius: 50px;
+  /* At rest a phone is centred at (1340, 540); the camera moves it from there. */
+  .phone { position: absolute; left: 1114px; top: 74px; width: 452px; height: 932px; border-radius: 50px;
     background: #050505; padding: 10px; box-sizing: border-box; will-change: transform; transform-origin: 50% 50%;
     box-shadow: 0 40px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.1); }
-  #screen { width: 432px; height: 912px; border-radius: 40px; overflow: hidden; background: #111; position: relative; }
-  #app { width: 360px; height: 760px; border: 0; display: block; transform: scale(1.2); transform-origin: 0 0; background: #111; }
+  .phone.theme { opacity: 0; }
+  .screen { width: 432px; height: 912px; border-radius: 40px; overflow: hidden; background: #111; position: relative; }
+  .screen iframe { width: 360px; height: 760px; border: 0; display: block; transform: scale(1.2); transform-origin: 0 0; background: #111; }
   #ripple { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%;
     background: rgba(255,255,255,.9); pointer-events: none; opacity: 0; z-index: 3; }
   .cap { position: absolute; left: 150px; top: 540px; width: 860px; transform: translateY(-50%); opacity: 0;
     font-size: 74px; line-height: 1.12; font-weight: 800; letter-spacing: -.02em; padding-left: 34px; border-left: 8px solid #4caf7d; }
-  .cap em { font-style: normal; color: #7fd4a6; }
+  .cap.center { left: 960px; top: 150px; width: auto; white-space: nowrap; text-align: center; padding: 0; border: 0; }
+  .cap em, #intro em { font-style: normal; color: #7fd4a6; }
   .w { display: inline-block; will-change: transform; }
   .brand { display: flex; align-items: center; gap: 22px; }
   .brand svg { border-radius: 22%; background: rgba(255,255,255,.1); will-change: transform; }
-  #intro { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
-  #intro .brand svg { width: 150px; height: 150px; }
-  #intro h1 { margin: 0; font-size: 112px; font-weight: 800; letter-spacing: -.03em; }
-  #intro p { margin: 0; font-size: 42px; color: rgba(255,255,255,.82); }
+  #intro { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; }
+  #intro h1 { margin: 0; font-size: 132px; line-height: 1.04; font-weight: 800; letter-spacing: -.03em; text-align: center; }
   #lockup { position: absolute; left: 150px; top: 86px; opacity: 0; }
   #lockup .brand svg { width: 64px; height: 64px; }
   #lockup h2 { margin: 0; font-size: 40px; font-weight: 700; letter-spacing: -.02em; }
@@ -47,13 +47,10 @@
 <div class="blob" id="blob1"></div>
 <div class="blob" id="blob2"></div>
 <div id="glow"></div>
-<div id="intro">
-  <div class="brand"><svg id="logo1"></svg><h1><span class="w">Daily</span> <span class="w">Budget</span></h1></div>
-  <p class="w">How much can I spend today?</p>
-</div>
+<div id="intro"><h1>How much can I<br>spend <em>today</em>?</h1></div>
 <div id="lockup"><div class="brand"><svg id="logo2"></svg><h2>Daily Budget</h2></div></div>
 <div id="caps"></div>
-<div id="stage3d"><div id="phone"><div id="screen"><iframe id="app" src="/store/promo/stage.html?theme=dark"></iframe><div id="ripple"></div></div></div></div>
+<div id="stage3d"><div class="phone" id="phone"><div class="screen"><iframe id="app" src="/store/promo/stage.html?theme=dark"></iframe><div id="ripple"></div></div></div></div>
 <div id="end">
   <div class="brand"><svg id="logo3"></svg><h1><span class="w">Daily</span> <span class="w">Budget</span></h1></div>
   <p class="cta w">Free on Google Play</p>
@@ -62,23 +59,29 @@
 <div id="fade"></div>
 <script>
   const LOGO = '<g fill="#fff"><path d="M36,36h36a4,4 0 0 1 4,4v32a4,4 0 0 1 -4,4h-36a4,4 0 0 1 -4,-4v-32a4,4 0 0 1 4,-4zM36,46v26h36v-26z"/><path d="M42,31h4v9h-4zM62,31h4v9h-4z"/><path d="M52.5,48h3v2.2c2.4,0.4 4,1.8 4.3,4h-3c-0.3,-1 -1.2,-1.6 -2.8,-1.6c-1.6,0 -2.6,0.7 -2.6,1.7c0,1 0.9,1.4 3.1,1.9c3.2,0.7 5.5,1.7 5.5,4.6c0,2.3 -1.7,3.9 -4.5,4.3v2.2h-3v-2.2c-2.7,-0.4 -4.5,-2 -4.7,-4.4h3c0.2,1.2 1.4,1.9 3.1,1.9c1.8,0 2.9,-0.7 2.9,-1.8c0,-1 -0.8,-1.5 -3.3,-2c-3,-0.7 -5.3,-1.6 -5.3,-4.5c0,-2.1 1.6,-3.7 4.3,-4.1z"/></g>';
-  for (const id of ['logo1', 'logo2', 'logo3']) { const s = document.getElementById(id); s.setAttribute('viewBox', '28 28 52 52'); s.innerHTML = LOGO; }
+  for (const id of ['logo2', 'logo3']) { const s = document.getElementById(id); s.setAttribute('viewBox', '28 28 52 52'); s.innerHTML = LOGO; }
 
   const S = 1.2;                                   // iframe scale
   const REST = { x: 1340, y: 540 };                // phone centre with no transform
   const SCREEN = { x: 1124, y: 84, w: 432, h: 912 }; // the screen's rest position on the stage
-  const SIDE_X = { right: 1340, left: 580 };       // phone centre per side; captions take the other side
+  // Phone centre per layout, plus the lockup's offset and opacity; captions take the other side, or
+  // for the centre layout the top, where the lockup fades out where it stands to make room for them.
+  const LAYOUT = { right: { x: 1340, y: 540, lx: 0, la: 1 }, left: { x: 580, y: 540, lx: 850, la: 1 }, center: { x: 960, y: 600, la: 0 } };
   const CAP_X = { right: 150, left: 1000 };        // caption left edge when the phone is on that side
   const $ = (id) => document.getElementById(id);
   let T = null;                                    // timeline from render.js
   let taps = [];                                   // {t, x, y} in screen pixels
+  let snapshot = null;                             // amounts just before the last tap, for the count effect
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const lerp = (a, b, k) => a + (b - a) * k;
   const easeOutQuart = (k) => 1 - Math.pow(1 - k, 4);
+  const easeOutCubic = (k) => 1 - Math.pow(1 - k, 3);
   const easeInCubic = (k) => k * k * k;
   const easeInOutCubic = (k) => (k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
   const easeOutBack = (k) => { const c = 1.70158; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
   const prog = (t, start, dur) => clamp((t - start) / dur, 0, 1);
+  const V = (i) => T.beats[Math.floor(i)] + (i % 1) * (T.beats[Math.floor(i) + 1] - T.beats[Math.floor(i)]);
+  const appDoc = () => $('app').contentDocument;
 
   // Wraps every word of an element in a span.w so words can pop in one by one.
   function splitWords(el) {
@@ -95,61 +98,100 @@
       n.parentNode.replaceChild(frag, n);
     }
   }
-  // A word that pops in at `start`: scale from .6 with overshoot, rises 24px, fades in.
-  function pop(el, t, start, dur = .22) {
+  // A word that pops in at `start`: scales from `from` (.6, or above 1 to slam down) with overshoot, rises 24px, fades in.
+  function pop(el, t, start, dur = .22, from = .6) {
     const k = prog(t, start, dur);
     el.style.opacity = Math.min(1, k * 2);
-    el.style.transform = `translateY(${lerp(24, 0, easeOutQuart(k))}px) scale(${lerp(.6, 1, easeOutBack(k))})`;
+    el.style.transform = `translateY(${lerp(24, 0, easeOutQuart(k))}px) scale(${lerp(from, 1, easeOutBack(k))})`;
   }
 
-  window.setup = function (timeline) {
+  window.setup = async function (timeline) {
     T = timeline;
+    splitWords($('intro').querySelector('h1'));
     const caps = $('caps');
     for (const c of T.captions) {
       const d = document.createElement('div');
-      d.className = 'cap'; d.innerHTML = c.html; splitWords(d); caps.appendChild(d);
-      // Captions sit on whichever side the phone isn't on at their beat.
+      d.className = 'cap' + (c.align === 'center' ? ' center' : ''); d.innerHTML = c.html; splitWords(d); caps.appendChild(d);
       const before = T.camera.filter((k) => k.beat <= c.beat);
       const cam = before.pop(), prev = before.pop();
-      d.style.left = CAP_X[cam ? cam.side : 'right'] + 'px';
+      if (c.align !== 'center') d.style.left = CAP_X[cam ? cam.side : 'right'] + 'px';
       // When the phone crosses the stage on this beat, the words wait an eighth note so it doesn't cover them.
       c.delay = prev && cam && prev.side !== cam.side ? .5 : 0;
     }
+    // The theme phones: the same app with the same data in the other themes, loaded now so they're ready.
+    const loads = [];
+    for (const p of T.themePhones) {
+      const d = document.createElement('div');
+      d.className = 'phone theme';
+      d.innerHTML = '<div class="screen"><iframe src="/store/promo/stage.html?theme=' + p.theme + '&extra=1"></iframe></div>';
+      $('stage3d').appendChild(d);
+      p.el = d;
+      const f = d.querySelector('iframe');
+      loads.push(new Promise((res) => {
+        const poll = () => (f.contentDocument && f.contentDocument.getElementById('todayLeft') ? f.contentDocument.fonts.ready.then(res) : setTimeout(poll, 50));
+        poll();
+      }));
+    }
+    await Promise.all(loads);
+    await new Promise((r) => setTimeout(r, 300));
   };
 
   // Called by render.js when it performs an action in the app; records a tap ripple.
   window.tap = function (sel, t) {
-    const doc = $('app').contentDocument;
+    const doc = appDoc();
     const el = doc.querySelector(sel);
     const r = el.getBoundingClientRect();
     taps.push({ t, x: (r.left + r.width / 2) * S, y: (r.top + r.height / 2) * S });
+    snapshot = readAmounts();
     el.click();
     $('app').contentWindow.__vt.register();
   };
   window.type = function (sel, text) {
-    const doc = $('app').contentDocument;
+    const doc = appDoc();
     const el = doc.querySelector(sel);
     el.value += text;
     el.dispatchEvent(new Event('input', { bubbles: true }));
   };
 
+  // ---- Count effect: mocked motion after an expense is added ------------------------------
+  const num = (s) => parseFloat((s.match(/[\d,]+(\.\d+)?/) || ['0'])[0].replace(/,/g, '')); // first amount in the text
+  const money = (v) => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function readAmounts() {
+    const d = appDoc();
+    return { today: num(d.getElementById('todayLeft').textContent), month: num(d.getElementById('monthRemaining').textContent),
+      spent: num(d.getElementById('monthSummary').textContent), bar: parseFloat(d.getElementById('barFill').style.width) || 0 };
+  }
+  function countEffect(e, t) {
+    const d = appDoc();
+    const start = V(e.beat), beat = V(e.beat + 1) - start, dur = e.dur * beat;
+    if (t < start || !snapshot || t > start + dur * 1.2 + .1) return;
+    if (!e.to) { e.to = readAmounts(); e.from = snapshot; }      // activated this frame, after the tap ran
+    const k = easeOutCubic(prog(t, start, dur));
+    const bar = d.getElementById('barFill');
+    bar.style.transition = 'none';
+    d.getElementById('todayLeft').textContent = money(lerp(e.from.today, e.to.today, k));
+    d.getElementById('monthRemaining').textContent = money(lerp(e.from.month, e.to.month, k));
+    d.getElementById('monthSummary').textContent = d.getElementById('monthSummary').textContent.replace(/\$[\d,.]+/, money(lerp(e.from.spent, e.to.spent, k)));
+    bar.style.width = lerp(0, e.to.bar, easeOutQuart(prog(t, start, dur * 1.2))) + '%';   // wipes in from empty
+    if (t >= start + dur * 1.2) bar.style.transition = '';
+  }
+
   // ---- Camera ------------------------------------------------------------------------------
-  // A camera state is {x, zoom, fx, fy}: the stage x the phone (or its focus point) is centred on,
-  // the zoom, and the focus point in screen pixels. Keyframes ease in from whatever the state was
-  // when they started, so overlapping moves blend instead of jumping.
-  const cam = { cur: { x: SIDE_X.right, zoom: 1, fx: SCREEN.w / 2, fy: SCREEN.h / 2 }, from: null, to: null, start: 0, dir: 0, applied: -1 };
+  // A camera state is {x, y, zoom, fx, fy, lx, la}: where on the stage the focus point is centred, the
+  // zoom, the focus point in screen pixels, and the lockup's offset and opacity. Keyframes ease in from
+  // whatever the state was when they started, so overlapping moves blend instead of jumping.
+  const cam = { cur: { x: 1340, y: 540, zoom: 1, fx: SCREEN.w / 2, fy: SCREEN.h / 2, lx: 0, la: 1 }, from: null, to: null, start: 0, dir: 0, applied: -1 };
   function resolve(k) {
     let fx = SCREEN.w / 2, fy = SCREEN.h / 2;
     if (k.focus) {
-      const r = $('app').contentDocument.querySelector(k.focus).getBoundingClientRect();
+      const r = appDoc().querySelector(k.focus).getBoundingClientRect();
       fx = (r.left + r.width / 2) * S; fy = (r.top + r.height / 2) * S;
     }
     // Zoomed in, the phone sits further out so it never covers the captions.
-    const out = (k.zoom - 1) * 200;
-    return { x: SIDE_X[k.side] + (k.side === 'right' ? out : -out), zoom: k.zoom, fx, fy };
+    const L = LAYOUT[k.side], out = (k.zoom - 1) * 200;
+    return { x: L.x + (k.side === 'right' ? out : k.side === 'left' ? -out : 0), y: L.y, zoom: k.zoom, fx, fy, lx: L.lx ?? cam.cur.lx, la: L.la };
   }
   function camera(t) {
-    const V = (i) => T.beats[Math.floor(i)] + (i % 1) * (T.beats[Math.floor(i) + 1] - T.beats[Math.floor(i)]);
     T.camera.forEach((k, i) => {
       if (i > cam.applied && t >= V(k.beat)) {
         cam.applied = i; cam.from = { ...cam.cur }; cam.to = resolve(k); cam.start = V(k.beat);
@@ -159,84 +201,86 @@
     let swing = 0;
     if (cam.to) {
       const k = easeInOutCubic(prog(t, cam.start, .55));
-      for (const p of ['x', 'zoom', 'fx', 'fy']) cam.cur[p] = lerp(cam.from[p], cam.to[p], k);
-      if (cam.dir) swing = cam.dir * 14 * Math.sin(Math.PI * prog(t, cam.start, .55)); // lean into the move
+      for (const p of ['x', 'y', 'zoom', 'fx', 'fy', 'lx', 'la']) cam.cur[p] = lerp(cam.from[p], cam.to[p], k);
+      if (cam.dir) swing = cam.dir * 9 * Math.sin(Math.PI * prog(t, cam.start, .55)); // lean into the move
     }
-    // Translate so the focus point, scaled about the phone's centre, lands at (cur.x, 540).
+    // Translate so the focus point, scaled about the phone's centre, lands at (cur.x, cur.y).
     const c = cam.cur;
     const tx = c.x - REST.x - (SCREEN.x + c.fx - REST.x) * c.zoom;
-    const ty = 540 - REST.y - (SCREEN.y + c.fy - REST.y) * c.zoom;
+    const ty = c.y - REST.y - (SCREEN.y + c.fy - REST.y) * c.zoom;
     return { tx, ty, zoom: c.zoom, swing };
   }
 
   window.renderAt = function (t) {
-    const b = T.beats, V = (i) => b[Math.floor(i)] + (i % 1) * (b[Math.floor(i) + 1] - b[Math.floor(i)]);
+    const b = T.beats;
     const beat = V(T.drop + 1) - V(T.drop);          // seconds per beat
-    const sixteenth = beat / 4;
     $('app').contentWindow.__vt.set(Math.round(t * 1000));
+    for (const e of T.effects) countEffect(e, t);
 
-    // Beat pulse (every beat) and downbeat pulse (every bar) for the background, decaying quickly.
+    // Beat pulse (every beat) and downbeat pulse (every bar) for the background, decaying quickly. Each
+    // is as strong as the kick on its beat, so the quiet intro pulses softly and the breaks stay still.
     let pulse = 0, down = 0;
     for (let i = 0; i < b.length; i++) {
       if (b[i] > t) break;
-      const d = Math.exp(-(t - b[i]) / .16);
+      const d = Math.exp(-(t - b[i]) / .16) * T.kick[i];
       pulse = Math.max(pulse, d);
       if ((i - T.drop) % 4 === 0) down = Math.max(down, d);
     }
-    const live = t >= V(T.drop) ? 1 : .3;             // the intro is calmer than the rest
-    $('glow').style.opacity = .15 + (.2 * pulse + .25 * down) * live;
-    $('flash').style.opacity = .12 * down * live;
+    $('glow').style.opacity = .15 + .2 * pulse + .25 * down;
+    $('flash').style.opacity = .08 * down;
     $('blob1').style.transform = `translate(${400 + 120 * Math.sin(t * .5)}px, ${300 + 90 * Math.cos(t * .37)}px) scale(${1 + .04 * pulse})`;
     $('blob2').style.transform = `translate(${1500 + 100 * Math.cos(t * .43)}px, ${900 + 110 * Math.sin(t * .31)}px) scale(${1 + .04 * pulse})`;
 
-    // Intro: logo, "Daily", "Budget" and the tagline land on four consecutive beats, then leave at the drop.
+    // Intro: the question pops in word by word on its beats (the highlighted word slams down), then
+    // leaves at the drop as the phone lands with the answer.
     const intro = $('intro');
     const outK = prog(t, V(T.drop) - .18, .18);
     intro.style.opacity = 1 - outK;
     intro.style.transform = `scale(${lerp(1, 1.08, outK)})`;
-    const logo1 = intro.querySelector('svg');
-    const lg = prog(t, V(T.intro), .35);
-    logo1.style.opacity = Math.min(1, lg * 2);
-    logo1.style.transform = `scale(${lerp(.4, 1, easeOutBack(lg))}) rotate(${lerp(-12, 0, easeOutQuart(lg))}deg)`;
-    const introWords = intro.querySelectorAll('.w');
-    pop(introWords[0], t, V(T.intro + 1), .28);
-    pop(introWords[1], t, V(T.intro + 2), .28);
-    pop(introWords[2], t, V(T.intro + 3), .3);
+    intro.querySelectorAll('.w').forEach((w, j) => pop(w, t, V(T.question[j]), .28, w.closest('em') ? 1.7 : .6));
 
-    // Small brand lockup, top-left, once the phone is in.
+    // Small brand lockup, top-left, once the phone is in; it keeps to the captions' side.
     const lk = easeOutQuart(prog(t, V(T.drop) + .05, .4));
     const lkOut = prog(t, V(T.end) - .05, .2);
     const c = camera(t);
-    // The lockup keeps to the captions' side, sliding over as the phone changes sides.
-    const sideK = clamp((cam.cur.x - SIDE_X.right) / (SIDE_X.left - SIDE_X.right), 0, 1);
-    $('lockup').style.opacity = lk * (1 - lkOut);
-    $('lockup').style.transform = `translateX(${lerp(-30, 0, lk) + lerp(0, CAP_X.left - CAP_X.right, sideK)}px)`;
+    $('lockup').style.opacity = lk * (1 - lkOut) * cam.cur.la;
+    $('lockup').style.transform = `translateX(${lerp(-30, 0, lk) + cam.cur.lx}px)`;
 
     // Phone: rises and lands exactly on the drop, then the camera takes over (side switches and
-    // zooms on the keyframes), and it drops away before the end card.
+    // zooms on the keyframes), and it falls away into the end card's beat, so the stage is clear when the logo lands.
     const phone = $('phone');
-    let py = 1150, ps = 1, psy = 1;
+    let py = 1150, ps = 1, psy = 1, drop = 0;
     if (t >= V(T.drop) - .4) {
       py = lerp(1150, 0, easeInCubic(prog(t, V(T.drop) - .4, .4)));
       if (t >= V(T.drop)) {
         const s = prog(t, V(T.drop), .32);           // landing squash and recover
         psy = 1 - .035 * Math.sin(Math.PI * s);
         ps = 1 + .015 * Math.sin(Math.PI * s);
-        py = lerp(0, 1150, easeInCubic(prog(t, V(T.end) - .05, .4)));
+        drop = lerp(0, 1150, easeInCubic(prog(t, V(T.end) - .4, .4)));
+        py = drop;
       }
     }
     phone.style.transform = `translate(${c.tx}px, ${c.ty + py}px) rotateY(${c.swing}deg) scale(${c.zoom * ps}, ${c.zoom * psy})`;
 
-    // Captions: words pop in on sixteenth notes from the caption's beat; the whole line leaves as the next arrives.
+    // Theme phones pop in beside the main phone on their beats and drop away with it.
+    const centerZoom = T.camera.filter((k) => k.side === 'center').pop().zoom;
+    for (const p of T.themePhones) {
+      const k = prog(t, V(p.beat), .4);
+      p.el.style.opacity = Math.min(1, k * 2);
+      p.el.style.transform = `translate(${p.x - REST.x}px, ${LAYOUT.center.y - REST.y + lerp(70, 0, easeOutQuart(k)) + drop}px) rotateY(${p.rot}deg) scale(${centerZoom * lerp(.6, 1, easeOutBack(k))})`;
+    }
+
+    // Captions: words pop in on sixteenth notes (or the caption's own step) from its beat; the line leaves as the next arrives.
     const caps = document.querySelectorAll('.cap');
     T.captions.forEach((cp, i) => {
       const start = V(cp.beat + cp.delay);
       const next = i + 1 < T.captions.length ? V(T.captions[i + 1].beat) : V(T.end) - .05;
       const o = prog(t, next - .18, .18);
       caps[i].style.opacity = t >= start ? 1 - o : 0;
-      caps[i].style.transform = `translateY(calc(-50% + ${-30 * o}px))`;
+      caps[i].style.transform = cp.align === 'center' ? `translate(-50%, calc(-50% + ${-30 * o}px))` : `translateY(calc(-50% + ${-30 * o}px))`;
       caps[i].style.borderLeftColor = `rgba(76,175,125,${.7 + .3 * pulse})`;
-      caps[i].querySelectorAll('.w').forEach((w, j) => pop(w, t, start + j * sixteenth));
+      const step = (cp.step || .25) * beat;
+      caps[i].querySelectorAll('.w').forEach((w, j) => pop(w, t, start + j * step));
     });
 
     // Tap ripple.

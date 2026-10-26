@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Loads the real app with sample data, a fixed clock and a virtual timeline (timers + CSS animations
-     advance only when the composer calls __vt.set(ms)). ?theme=dark|light -->
+     advance only when the composer calls __vt.set(ms)). ?theme=dark|amoled|light&extra=1 -->
 <meta charset="utf-8">
 <script>
 (function () {
@@ -15,13 +15,26 @@
     [12, 85.00, 'Concert'], [14, 36.40, 'Groceries'], [15, 4.50, 'Coffee'], [15, 22.99, 'Books'], [16, 13.60, 'Lunch'],
     [17, 35.00, 'Gas'], [18, 4.50, 'Coffee'],
   ];
+  if (q.get('extra')) spend.push([18, 12.80, 'Lunch']); // the expense the main phone adds during the video
   const expenses = spend.map(([d, amount, note], i) => {
     const ts = new Date(2026, 8, d, 9 + (i % 8), 15).getTime();
     return { id: 's' + i, ts, day: '2026-09-' + String(d).padStart(2, '0'), amount, note };
   });
-  localStorage.setItem('dailyBudget.v1', JSON.stringify({
+  const data = JSON.stringify({
     budget: 1500, currency: '$', expenses, since: '2026-09-01', theme, reminder: { enabled: true, time: '08:00' },
-  }));
+  });
+
+  // Each phone keeps its data in memory: the stages share an origin, so with the real localStorage
+  // the last phone to load would set every phone's theme.
+  function memoryStorage(key, value) {
+    const m = new Map([[key, value]]);
+    const storage = {
+      getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)),
+      removeItem: (k) => m.delete(k), clear: () => m.clear(), key: (i) => [...m.keys()][i] ?? null,
+      get length() { return m.size; },
+    };
+    Object.defineProperty(window, 'localStorage', { value: storage, configurable: true });
+  }
 
   function fixClock(t) {
     const Real = Date;
@@ -84,7 +97,7 @@
       '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
       '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=block">' +
       '<style>html,body{overflow:hidden!important;font-family:Roboto,system-ui,sans-serif!important} ::-webkit-scrollbar{display:none} input{caret-color:transparent}</style>' +
-      '<script>(' + fixClock + ')(' + NOW + ');(' + virtualTime + ')()<\/script>');
+      '<script>(' + memoryStorage + ')("dailyBudget.v1",' + JSON.stringify(data) + ');(' + fixClock + ')(' + NOW + ');(' + virtualTime + ')()<\/script>');
     document.open(); document.write(html); document.close();
   });
 })();

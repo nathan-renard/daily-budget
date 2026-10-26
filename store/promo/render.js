@@ -30,18 +30,22 @@ const END_BEAT = 40;                  // end card (7 bars after the drop)
 const DURATION = 19.6;                // seconds; music fades out over the last 1.4 s
 const FADE_OUT = 19.15;               // video fade to black starts here
 
-function timeline(beats) {
+function timeline(beats, kick) {
   const B = (i) => beats[Math.floor(i)] + (i % 1) * (beats[Math.floor(i) + 1] - beats[Math.floor(i)]);
   const T = {
-    beats, drop: DROP_BEAT, intro: FIRST_BEAT, tagline: FIRST_BEAT + 2, end: END_BEAT, duration: DURATION, fadeOut: FADE_OUT,
+    beats, kick, drop: DROP_BEAT, intro: FIRST_BEAT, end: END_BEAT, duration: DURATION, fadeOut: FADE_OUT,
+    // The opening question, word by word: "How much" and "can I" on the two hits of beat 8, a pause
+    // through the silent beat 9, then "spend" on 10 and "today?" on 11. The phone answers it on the drop.
+    question: [8, 8, 8.5, 8.5, 10, 11, 11],
     captions: [
-      { beat: 12, html: 'One number: what you can spend <em>today</em>.' },
+      { beat: 12, html: 'One number, <em>every day</em>.' },
       { beat: 16, html: 'Log an expense in <em>two taps</em>.' },
       { beat: 20, html: 'Spend less today, <em>tomorrow grows</em>.' },
       { beat: 24, html: 'Every expense, <em>by day</em>.' },
       { beat: 28, html: '<em>Green</em> days. <em>Red</em> days.' },
-      { beat: 32, html: 'Dark, AMOLED or <em>light</em>.' },
-      { beat: 36, html: 'Free. Offline. <em>No account</em>.' },
+      // Centred above the three phones; one word per half beat so each theme lands with its phone.
+      { beat: 32, html: '<em>Dark</em>, <em>AMOLED</em> or <em>light</em>.', align: 'center', step: .5 },
+      { beat: 36, html: 'Free. Offline. <em>No account</em>.', align: 'center' },
     ],
     // Camera: which side of the stage the phone is on, how far it's zoomed and on what (a selector
     // in the app, or nothing for the whole screen). Each keyframe eases in from the state before it.
@@ -50,14 +54,18 @@ function timeline(beats) {
       { beat: 13.5, side: 'right', zoom: 1.5, focus: '#todayLeft' },
       { beat: 15, side: 'right', zoom: 1 },
       { beat: 16.5, side: 'right', zoom: 1.45, focus: '#addForm' },
-      { beat: 20, side: 'left', zoom: 1 },
-      { beat: 22, side: 'left', zoom: 1.5, focus: '#projection' },
-      { beat: 24, side: 'right', zoom: 1 },
-      { beat: 28, side: 'left', zoom: 1 },
+      { beat: 20, side: 'right', zoom: 1.4, focus: '.stats' },   // the number, the Tomorrow pill and the bar
+      { beat: 24, side: 'left', zoom: 1 },
       { beat: 30, side: 'left', zoom: 1.4, focus: '#calGrid' },
-      { beat: 32, side: 'right', zoom: 1 },
-      { beat: 36, side: 'left', zoom: 1 },
-      { beat: 37.5, side: 'left', zoom: 1.5, focus: '#todayLeft' },
+      { beat: 32, side: 'center', zoom: .72 },                   // room for the two theme phones
+    ],
+    // Mocked-up motion the app doesn't have: after the Add tap the amounts count to their new
+    // values and the month bar wipes to its new fill (the end state is the real one).
+    effects: [{ beat: 20, kind: 'count', dur: 1.5 }],
+    // The other two themes, popping in beside the main phone on their beat (stage x and a slight turn).
+    themePhones: [
+      { beat: 33, theme: 'amoled', x: 530, rot: 8 },
+      { beat: 34, theme: 'light', x: 1390, rot: -8 },
     ],
   };
   // What happens in the app, by beat: taps on beats, typed digits on eighth notes.
@@ -71,11 +79,7 @@ function timeline(beats) {
     [24, 'tap', '.tab[data-tab="expenses"]'],
     [28, 'tap', '.tab[data-tab="calendar"]'],
     [30, 'tap', '#calGrid .cal-day.over'],
-    [32, 'tap', '#settingsBtn'],
-    [33, 'tap', '#rowTheme'],
-    [34, 'tap', '#themePicker button[data-theme="light"]'],
-    [35, 'tap', '#settingsBack'],
-    [36, 'tap', '.tab[data-tab="budget"]'],
+    [32, 'tap', '.tab[data-tab="budget"]'],
   ].map(([beat, kind, sel, text]) => ({ t: B(beat), kind, sel, text }));
   return { T, actions };
 }
@@ -109,9 +113,10 @@ const run = (cmd, a) => execFileSync(cmd, a, { stdio: ['ignore', 'pipe', 'inheri
   // 2. Beats.
   const beatsFile = path.join(TMP, 'beats.json');
   run('uv', ['run', '--python', '3.12', '--with', 'librosa', '--with', 'numpy', 'python', '-I', path.join(__dirname, 'beats.py'), wav, beatsFile]);
-  const abs = JSON.parse(fs.readFileSync(beatsFile, 'utf8')).beats;
+  const music = JSON.parse(fs.readFileSync(beatsFile, 'utf8'));
+  const abs = music.beats;
   const beats = abs.map((x) => +(x - abs[FIRST_BEAT]).toFixed(3));
-  const { T, actions } = timeline(beats);
+  const { T, actions } = timeline(beats, music.kick);
   console.log(`tempo grid: ${beats.length} beats, drop at ${beats[DROP_BEAT]} s, ${Math.round(DURATION * FPS)} frames`);
 
   // 3. Frames.

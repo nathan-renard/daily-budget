@@ -103,8 +103,8 @@ node render.js
 ```
 
 The captions and the tap schedule are at the top of `render.js`; the stage layout is
-`composer.html`. If the music changes, check `DROP_BEAT` against the printed beat grid so the
-phone still lands on the drop.
+`composer.html`. If the music changes, check `DROP_BEAT` and the opening question's beats against
+the printed beat grid (and the kick strength per beat) so the phone still lands on the drop.
 
 ## Privacy policy
 
