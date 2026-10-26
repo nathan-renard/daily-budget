@@ -1,0 +1,11 @@
+{
+  "name": "daily-budget-promo",
+  "private": true,
+  "description": "Renders the Play Store promo video from the real app UI.",
+  "scripts": {
+    "render": "node render.js"
+  },
+  "dependencies": {
+    "playwright": "1.58.0"
+  }
+}

@@ -25,3 +25,10 @@ keystore.properties
 # Local tool settings (may contain absolute paths with the local username)
 .claude/settings.local.json
 .claude/worktrees/
+
+# Promo video renderer dependencies
+store/promo/node_modules/
+
+# Promo video media: the music isn't licensed for redistribution here, and the video contains it
+promo_music.mp3
+store/listing/promo-video-1920x1080.mp4

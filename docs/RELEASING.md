@@ -82,6 +82,30 @@ powershell -ExecutionPolicy Bypass -File store/render.ps1
 
 The script needs Microsoft Edge installed and serves the repository on port 8766 while it runs.
 
+## Promo video
+
+`store/listing/promo-video-1920x1080.mp4` is the listing's promo video: about 20 seconds of the
+real app UI (the same sample data as the screenshots) with captions, cut to `promo_music.mp3` in
+the repository root so that every tap and screen change lands on a beat. Neither file is in git
+(the music isn't licensed for redistribution, and the video contains it), so to render the video
+put your own track at `promo_music.mp3` first. Play Console only takes a YouTube link for the promo
+video, so upload the file to YouTube (public or unlisted) and paste the link under Store listing →
+Promo video.
+
+It's rendered by [`store/promo/render.js`](../store/promo/render.js), which drives the app in
+headless Chromium with a virtual clock (so every frame is exact) and needs Node, ffmpeg and
+[uv](https://docs.astral.sh/uv/) (for the beat analysis in `beats.py`, via librosa) on the PATH:
+
+```sh
+cd store/promo
+npm install && npx playwright install chromium   # once
+node render.js
+```
+
+The captions and the tap schedule are at the top of `render.js`; the stage layout is
+`composer.html`. If the music changes, check `DROP_BEAT` against the printed beat grid so the
+phone still lands on the drop.
+
 ## Privacy policy
 
 [`privacy-policy.html`](privacy-policy.html) is the app's privacy policy. If a change affects

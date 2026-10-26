@@ -1,0 +1,91 @@
+<!doctype html>
+<!-- Loads the real app with sample data, a fixed clock and a virtual timeline (timers + CSS animations
+     advance only when the composer calls __vt.set(ms)). ?theme=dark|light -->
+<meta charset="utf-8">
+<script>
+(function () {
+  const APP = '/app/src/main/assets/www/';
+  const q = new URLSearchParams(location.search);
+  const theme = q.get('theme') || 'dark';
+  const NOW = new Date(2026, 8, 18, 10, 30).getTime();
+  const spend = [
+    [1, 42.80, 'Groceries'], [1, 4.50, 'Coffee'], [2, 12.90, 'Lunch'], [3, 38.00, 'Gas'], [3, 4.50, 'Coffee'],
+    [4, 64.20, 'Dinner out'], [5, 27.35, 'Groceries'], [7, 24.00, 'Movie tickets'], [7, 8.50, 'Popcorn'],
+    [8, 4.50, 'Coffee'], [8, 11.20, 'Lunch'], [9, 51.10, 'Groceries'], [10, 18.75, 'Pharmacy'], [11, 30.00, 'Bus pass'],
+    [12, 85.00, 'Concert'], [14, 36.40, 'Groceries'], [15, 4.50, 'Coffee'], [15, 22.99, 'Books'], [16, 13.60, 'Lunch'],
+    [17, 35.00, 'Gas'], [18, 4.50, 'Coffee'],
+  ];
+  const expenses = spend.map(([d, amount, note], i) => {
+    const ts = new Date(2026, 8, d, 9 + (i % 8), 15).getTime();
+    return { id: 's' + i, ts, day: '2026-09-' + String(d).padStart(2, '0'), amount, note };
+  });
+  localStorage.setItem('dailyBudget.v1', JSON.stringify({
+    budget: 1500, currency: '$', expenses, since: '2026-09-01', theme, reminder: { enabled: true, time: '08:00' },
+  }));
+
+  function fixClock(t) {
+    const Real = Date;
+    function FakeDate(...args) {
+      if (!new.target) return new Real(t).toString();
+      return args.length ? new Real(...args) : new Real(t);
+    }
+    FakeDate.prototype = Real.prototype;
+    FakeDate.now = () => t;
+    FakeDate.UTC = Real.UTC; FakeDate.parse = Real.parse;
+    window.Date = FakeDate;
+  }
+
+  // Virtual timeline: timers, rAF and every CSS animation/transition move only with __vt.set(ms).
+  function virtualTime() {
+    const w = window;
+    let now = 0, nid = 1;
+    const timers = new Map(), rafs = [];
+    w.setTimeout = (fn, ms = 0, ...a) => { const id = nid++; timers.set(id, { at: now + (+ms || 0), fn: () => fn(...a) }); return id; };
+    w.setInterval = (fn, ms = 1, ...a) => { const id = nid++; timers.set(id, { at: now + (+ms || 1), repeat: +ms || 1, fn: () => fn(...a) }); return id; };
+    w.clearTimeout = w.clearInterval = (id) => timers.delete(id);
+    w.requestAnimationFrame = (fn) => { rafs.push(fn); return nid++; };
+    w.cancelAnimationFrame = () => {};
+    Object.defineProperty(w.performance, 'now', { value: () => now, configurable: true });
+    const seen = new WeakMap();
+    function stepAnims() {
+      for (const a of document.getAnimations()) {
+        if (!seen.has(a)) { seen.set(a, now); a.pause(); }
+        const t = now - seen.get(a);
+        const end = a.effect.getComputedTiming().endTime;
+        if (t >= end) {
+          if (a.playState !== 'finished') { a.play(); a.currentTime = end; }
+        } else {
+          a.currentTime = t;
+        }
+      }
+    }
+    w.__vt = {
+      get now() { return now; },
+      register: stepAnims,
+      set(t) {
+        for (;;) {
+          let nk = null, nx = null;
+          for (const [k, v] of timers) if (v.at <= t && (!nx || v.at < nx.at)) { nk = k; nx = v; }
+          if (!nx) break;
+          now = nx.at;
+          if (nx.repeat) nx.at += nx.repeat; else timers.delete(nk);
+          nx.fn();
+        }
+        now = t;
+        const run = rafs.splice(0);
+        for (const fn of run) fn(now);
+        stepAnims();
+      },
+    };
+  }
+
+  fetch(APP + 'index.html').then((r) => r.text()).then((html) => {
+    html = html.replace('<head>', '<head><base href="' + APP + '">' +
+      '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+      '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=block">' +
+      '<style>html,body{overflow:hidden!important;font-family:Roboto,system-ui,sans-serif!important} ::-webkit-scrollbar{display:none} input{caret-color:transparent}</style>' +
+      '<script>(' + fixClock + ')(' + NOW + ');(' + virtualTime + ')()<\/script>');
+    document.open(); document.write(html); document.close();
+  });
+})();
+</script>

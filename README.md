@@ -252,7 +252,7 @@ app/src/main/java/com/aimbire/dailybudget/
 app/src/main/res/                 Icons, window colours, and the widget's layouts and shapes
 app/src/debug/                    Debug builds only: the widget preview screen
 docs/                             Privacy policy, release steps and README screenshots
-store/                            Google Play listing graphics and the HTML they're rendered from
+store/                            Google Play listing graphics, and what renders them and the promo video
 tools/                            Desktop preview server and release scripts
 ```
 
