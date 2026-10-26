@@ -24,3 +24,4 @@ keystore.properties
 
 # Local tool settings (may contain absolute paths with the local username)
 .claude/settings.local.json
+.claude/worktrees/

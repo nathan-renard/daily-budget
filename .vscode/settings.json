@@ -1,0 +1,5 @@
+{
+    // Android builds go through gradlew; the Java extension can't load an AGP project anyway.
+    // Syntax-only mode skips its Gradle import, which otherwise shows a bogus error on build.gradle.
+    "java.server.launchMode": "LightWeight"
+}
