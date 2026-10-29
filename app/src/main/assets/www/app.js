@@ -493,7 +493,7 @@
   let pro = hasPro ? JSON.parse(window.Android.proState() || '{}') : {
     pro: false,
     products: [
-      { id: 'pro_small', price: '$1.99' }, { id: 'pro_medium', price: '$4.99' }, { id: 'pro_large', price: '$9.99' },
+      { id: 'pro_small', price: '$0.99' }, { id: 'pro_medium', price: '$2.99' }, { id: 'pro_large', price: '$4.99' },
     ],
   };
 

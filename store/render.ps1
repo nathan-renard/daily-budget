@@ -1,5 +1,5 @@
-# Renders the Play Store listing graphics into store/listing/ with headless Microsoft Edge,
-# plus plain (uncaptioned) app screenshots for the README into docs/screenshots/.
+# Renders the Play Store listing graphics and the promo video's YouTube thumbnail into store/listing/
+# with headless Microsoft Edge, plus plain (uncaptioned) app screenshots for the README into docs/screenshots/.
 # Screenshots show the real app UI (app/src/main/assets/www) loaded with sample data.
 # Usage: powershell -ExecutionPolicy Bypass -File store/render.ps1
 $ErrorActionPreference = 'Stop'
@@ -57,6 +57,7 @@ try {
 
     Render "$base/icon.html" 'icon-512.png' 512 512 1 -Alpha
     Render "$base/feature.html" 'feature-graphic-1024x500.png' 1024 500 1
+    Render "$base/thumbnail.html" 'youtube-thumbnail-1280x720.png' 1280 720 1
 
     $shots = @(
         @('budget',   'dark',  'Know what you can spend today', 'Your monthly budget, turned into a daily allowance'),
