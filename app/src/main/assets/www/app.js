@@ -3,6 +3,7 @@
 
   const STORAGE_KEY = 'dailyBudget.v1';
   const $ = (id) => document.getElementById(id);
+  const t = I18n.t;
 
   // ---- State -------------------------------------------------------------
   function load() {
@@ -94,11 +95,11 @@
   function parseMoney(text) {
     const decimal = new Intl.NumberFormat().formatToParts(1.5)
       .find((p) => p.type === 'decimal').value === ',' ? ',' : '.';
-    const invalid = { error: 'Enter a number, like 12' + decimal + '50.' };
+    const invalid = { error: t('enterNumber', { example: '12' + decimal + '50' }) };
     const grouped = (x) => /^[1-9]\d{0,2}([ .,])\d{3}(\1\d{3})*$/.test(x);
     const s = text.trim().replace(/\s/g, ' ');
-    if (!s) return { error: 'Enter an amount.' };
-    if (s[0] === '-') return { error: 'The amount can\'t be negative.' };
+    if (!s) return { error: t('enterAmount') };
+    if (s[0] === '-') return { error: t('notNegative') };
     if (!/^[\d., ]+$/.test(s) || !/\d/.test(s)) return invalid;
 
     let int = s;
@@ -114,14 +115,14 @@
       }
     }
     if ((!/^\d*$/.test(int) && !grouped(int)) || !/^\d*$/.test(frac)) return invalid;
-    if (frac.length > 2) return { error: 'Use at most two decimal places.' };
+    if (frac.length > 2) return { error: t('twoDecimals') };
     return { value: Number(int.replace(/\D/g, '') + '.' + frac) };
   }
 
   // Returns the field's amount, or shows why it isn't valid and returns null.
   function readMoney(input, min) {
     const r = parseMoney(input.value);
-    const error = r.error || (r.value < min ? 'Enter at least ' + money(min) + '.' : '');
+    const error = r.error || (r.value < min ? t('enterAtLeast', { amount: money(min) }) : '');
     input.setCustomValidity(error);
     if (error) input.reportValidity();
     return error ? null : r.value;
@@ -141,29 +142,28 @@
     const s = Budget.compute(state.budget, state.expenses, now);
 
     // The headline changes wording depending on where the user stands today.
+    const spentOf = t('spentOfAllowance', { spent: money(s.spentToday), allowance: money(s.dailyAllowance) });
     let label, amount, sub;
     if (!state.budget) {
-      label = 'Set a monthly budget to start';
+      label = t('setBudgetToStart');
       amount = 0;
-      sub = 'Tap the gear icon above';
+      sub = t('tapGear');
     } else if (s.monthRemaining < 0) {
-      label = 'Over this month\'s budget by';
+      label = t('overMonthBy');
       amount = -s.monthRemaining;
-      sub = 'No allowance left until next month';
+      sub = t('noAllowanceLeft');
     } else if (s.todayLeft < -0.005) {
-      label = 'Over today\'s budget by';
+      label = t('overTodayBy');
       amount = -s.todayLeft;
-      sub = money(s.spentToday) + ' spent of ' + money(s.dailyAllowance);
+      sub = spentOf;
     } else if (s.todayLeft < 0.005) {
-      label = 'Today\'s budget is used up';
+      label = t('usedUpToday');
       amount = 0;
-      sub = money(s.spentToday) + ' spent of ' + money(s.dailyAllowance);
+      sub = spentOf;
     } else {
-      label = 'You can spend today';
+      label = t('canSpendToday');
       amount = s.todayLeft;
-      sub = s.spentToday
-        ? money(s.spentToday) + ' spent of ' + money(s.dailyAllowance)
-        : 'Daily allowance ' + money(s.dailyAllowance);
+      sub = s.spentToday ? spentOf : t('dailyAllowance', { amount: money(s.dailyAllowance) });
     }
     const over = s.monthRemaining < 0 || s.todayLeft < -0.005;
     $('heroLabel').textContent = label;
@@ -179,25 +179,25 @@
       // nothing to project
     } else if (s.monthRemaining <= 0.005 && s.daysLeft > 1) {
       projection.className = 'projection down';
-      projection.textContent = 'Allowance ended for this month';
+      projection.textContent = t('allowanceEnded');
     } else {
       const diff = s.tomorrowAllowance - s.dailyAllowance;
       const dir = s.daysLeft === 1 ? 'reset' : diff > 0.005 ? 'up' : diff < -0.005 ? 'down' : 'same';
       const arrow = { up: '↑ ', down: '↓ ', same: '', reset: '' }[dir];
       projection.className = 'projection ' + dir;
-      projection.textContent = (s.daysLeft === 1 ? 'Tomorrow (new month): ' : 'Tomorrow: ') +
-        arrow + money(s.tomorrowAllowance) + ' / day';
+      projection.textContent = t(s.daysLeft === 1 ? 'tomorrowNewMonth' : 'tomorrowPerDay',
+        { amount: arrow + money(s.tomorrowAllowance) });
     }
 
     $('monthRemaining').textContent = money(s.monthRemaining);
     $('monthRemaining').classList.toggle('neg', s.monthRemaining < 0);
     $('daysLeft').textContent = s.daysLeft;
-    $('daysLeftLabel').textContent = s.daysLeft === 1 ? 'day left' : 'days left';
+    $('daysLeftLabel').textContent = t('daysLeft', { count: s.daysLeft });
 
     const pct = state.budget > 0 ? Math.min(100, (s.spentMonth / state.budget) * 100) : 0;
     $('barFill').style.width = pct + '%';
     $('barFill').classList.toggle('over', s.monthRemaining < 0);
-    $('monthSummary').textContent = money(s.spentMonth) + ' of ' + money(state.budget) + ' spent';
+    $('monthSummary').textContent = t('spentOfBudget', { spent: money(s.spentMonth), budget: money(state.budget) });
     fitAmounts();
   }
 
@@ -219,7 +219,7 @@
     // By day first: after a time-zone change, time order alone can split a day's group.
     const items = monthExpenses(Budget.monthKey(now)).sort((a, b) => b.day.localeCompare(a.day) || b.ts - a.ts);
     const total = items.reduce((sum, e) => sum + e.amount, 0);
-    $('expenseTotal').textContent = items.length ? money(total) + ' total' : '';
+    $('expenseTotal').textContent = items.length ? t('expensesTotal', { amount: money(total) }) : '';
     $('emptyList').hidden = items.length > 0;
 
     const container = $('expenseGroups');
@@ -236,7 +236,7 @@
         wrap.className = 'group';
         wrap.innerHTML = '<div class="group-head"><span></span><span></span></div><ul class="list"></ul>';
         wrap.querySelector('.group-head span').textContent =
-          e.day === Budget.dayKey(now) ? 'Today'
+          e.day === Budget.dayKey(now) ? t('today')
             : d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' });
         container.appendChild(wrap);
         group = { day: e.day, list: wrap.querySelector('.list'), totalEl: wrap.querySelectorAll('.group-head span')[1], total: 0 };
@@ -248,12 +248,13 @@
       li.innerHTML =
         '<div class="item-main"><span class="item-note"></span><span class="item-time"></span></div>' +
         '<span class="item-amount"></span>' +
-        '<button class="del" aria-label="Delete">×</button>';
-      li.querySelector('.item-note').textContent = e.note || 'Expense';
+        '<button class="del">×</button>';
+      li.querySelector('.del').setAttribute('aria-label', t('delete'));
+      li.querySelector('.item-note').textContent = e.note || t('expense');
       li.querySelector('.item-time').textContent = times.format(e.ts);
       li.querySelector('.item-amount').textContent = money(e.amount);
       li.querySelector('.del').addEventListener('click', async () => {
-        if (!(await confirmDialog('Delete this expense?'))) return;
+        if (!(await confirmDialog(t('deleteExpense')))) return;
         state.expenses = state.expenses.filter((x) => x.id !== e.id);
         save();
         render();
@@ -328,15 +329,15 @@
       if (selectedDay === info.key) {
         const label = date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
         $('dayDetail').textContent = info.status === 'future' || info.status === 'untracked'
-          ? label + ' · no data'
+          ? t('dayNoData', { day: label })
           : info.status === 'gone'
-            ? label + ' · no budget left for the month'
-            : label + ' · spent ' + money(info.spent) + ' of ' + money(info.allowance);
+            ? t('dayNoBudget', { day: label })
+            : t('daySpent', { day: label, spent: money(info.spent), allowance: money(info.allowance) });
       }
     }
     $('legendGone').hidden = !anyGone;
-    if (!selectedDay) $('dayDetail').textContent = 'Tap a day for details';
-    $('calendarScore').textContent = judged ? ok + ' of ' + judged + ' days on budget' : '';
+    if (!selectedDay) $('dayDetail').textContent = t('tapDay');
+    $('calendarScore').textContent = judged ? t('daysOnBudget', { ok, count: judged }) : '';
   }
 
   // ---- Rendering ---------------------------------------------------------
@@ -431,7 +432,7 @@
 
   // ---- Theme -------------------------------------------------------------
   const lightQuery = window.matchMedia('(prefers-color-scheme: light)');
-  const THEME_NAMES = { dark: 'Dark', amoled: 'AMOLED black', light: 'Light', system: 'Same as phone' };
+  const THEME_NAMES = { dark: 'themeDark', amoled: 'themeAmoled', light: 'themeLight', system: 'themeSystem' };
 
   function applyTheme() {
     const resolved = state.theme === 'system' ? (lightQuery.matches ? 'light' : 'dark') : state.theme;
@@ -448,7 +449,7 @@
     for (const btn of $('themePicker').children) {
       btn.classList.toggle('active', btn.dataset.theme === state.theme);
     }
-    $('valTheme').textContent = THEME_NAMES[state.theme];
+    $('valTheme').textContent = t(THEME_NAMES[state.theme]);
   }
 
   lightQuery.addEventListener('change', () => { if (state.theme === 'system') applyTheme(); });
@@ -464,12 +465,12 @@
   }
 
   // The widget follows the app's theme, or on Android 12+ the wallpaper (Material You).
-  const WIDGET_COLOR_NAMES = { app: 'Same as the app', wallpaper: 'From wallpaper' };
+  const WIDGET_COLOR_NAMES = { app: 'colorsApp', wallpaper: 'colorsWallpaperShort' };
   const canMatchWallpaper = !!(window.Android && window.Android.sdk && window.Android.sdk() >= 31);
 
   function applyWidgetColors() {
     $('rowWidgetColors').hidden = !canMatchWallpaper;
-    $('valWidgetColors').textContent = WIDGET_COLOR_NAMES[state.widgetColors];
+    $('valWidgetColors').textContent = t(WIDGET_COLOR_NAMES[state.widgetColors]);
     for (const btn of $('widgetColorsPicker').children) {
       btn.classList.toggle('active', btn.dataset.colors === state.widgetColors);
     }
@@ -489,7 +490,7 @@
   // Pay what you want: three one-time purchases, any of which unlocks the widget.
   // Purchases happen in the Android app; the browser preview shows sample prices.
   const hasPro = !!(window.Android && window.Android.proState);
-  const PRO_TIERS = { pro_small: 'Small', pro_medium: 'Medium', pro_large: 'Large' };
+  const PRO_TIERS = { pro_small: 'proSmall', pro_medium: 'proMedium', pro_large: 'proLarge' };
   let pro = hasPro ? JSON.parse(window.Android.proState() || '{}') : {
     pro: false,
     products: [
@@ -498,12 +499,9 @@
   };
 
   function renderPro() {
-    $('valPro').textContent = pro.pro ? 'Unlocked' : 'Pay what you want';
-    $('proTitle').textContent = pro.pro ? 'Thank you!' : 'Pay what you want';
-    $('proText').textContent = pro.pro
-      ? 'Pro is unlocked. If you\'d like to give a little more, the other amounts are one-off tips.'
-      : 'Pro adds the home-screen widget. Pick any amount: they all unlock the same thing, ' +
-        'and the bigger ones help keep the app going.';
+    $('valPro').textContent = t(pro.pro ? 'proUnlocked' : 'payWhatYouWant');
+    $('proTitle').textContent = t(pro.pro ? 'thankYou' : 'payWhatYouWant');
+    $('proText').textContent = t(pro.pro ? 'proThanks' : 'proPitch');
 
     const list = $('proOptions');
     list.innerHTML = '';
@@ -512,19 +510,19 @@
       btn.type = 'button';
       btn.disabled = !hasPro || p.owned;
       btn.innerHTML = '<span></span><span class="row-value"></span>';
-      btn.firstChild.textContent = PRO_TIERS[p.id] || p.id;
-      btn.lastChild.textContent = p.owned ? 'Paid ✓' : p.price;
+      btn.firstChild.textContent = PRO_TIERS[p.id] ? t(PRO_TIERS[p.id]) : p.id;
+      btn.lastChild.textContent = p.owned ? t('paid') : p.price;
       btn.addEventListener('click', () => window.Android.buyPro(p.id));
       list.appendChild(btn);
     }
 
     let note = '';
-    if (!hasPro) note = 'Purchases are made in the Android app.';
-    else if (pro.pending) note = 'Your payment is pending. Pro unlocks as soon as it goes through.';
-    else if (pro.status === 'connecting') note = 'Connecting to Google Play…';
-    else if (pro.status === 'unavailable') note = 'Google Play isn\'t available, so purchases can\'t be made right now.';
-    else if (!(pro.products || []).length) note = 'Prices couldn\'t be loaded from Google Play. Try again later.';
-    $('proNote').textContent = note;
+    if (!hasPro) note = 'purchasesInApp';
+    else if (pro.pending) note = 'paymentPending';
+    else if (pro.status === 'connecting') note = 'connectingPlay';
+    else if (pro.status === 'unavailable') note = 'playUnavailable';
+    else if (!(pro.products || []).length) note = 'pricesUnavailable';
+    $('proNote').textContent = note && t(note);
     $('proAddWidget').hidden = !(hasPro && pro.pro && window.Android.canAddWidget());
     $('proDebug').hidden = !pro.debug;
   }
@@ -559,7 +557,7 @@
     $('reminderTest').hidden = !hasBridge || !r.enabled;
     $('reminderNote').classList.remove('neg-text');
     $('reminderNote').textContent = note ||
-      (hasBridge ? '' : 'Notifications are sent by the Android app.');
+      (hasBridge ? '' : t('notificationsInApp'));
     if (hasBridge) {
       const [h, m] = r.time.split(':').map(Number);
       window.Android.setReminder(r.enabled, h, m);
@@ -593,13 +591,13 @@
     if (granted) return;
     state.reminder.enabled = false;
     save();
-    applyReminder('Notifications are blocked. Allow them for Daily Budget in Android settings.');
+    applyReminder(t('notificationsBlocked'));
     $('reminderNote').classList.add('neg-text');
   };
 
   // ---- Settings page -----------------------------------------------------
   function renderSettings() {
-    $('valBudget').textContent = state.budget ? money(state.budget) : 'Not set';
+    $('valBudget').textContent = state.budget ? money(state.budget) : t('notSet');
     $('valCurrency').textContent = state.currency;
     const [h, m] = state.reminder.time.split(':').map(Number);
     $('valTime').textContent = timeFormat().format(new Date(2000, 0, 1, h, m));
@@ -637,16 +635,16 @@
     const sheet = $('editSheet');
     input.setCustomValidity('');
     if (field === 'budget') {
-      $('editTitle').textContent = locked ? 'Set your monthly budget' : 'Monthly budget';
-      $('editHint').textContent = 'How much are you willing to spend each month? This amount repeats every month.';
+      $('editTitle').textContent = t(locked ? 'setYourBudget' : 'monthlyBudget');
+      $('editHint').textContent = t('budgetHint');
       input.type = 'text';
       input.inputMode = 'decimal';
       input.removeAttribute('maxlength');
-      input.placeholder = 'e.g. 1500';
+      input.placeholder = t('budgetExample');
       input.value = state.budget || '';
     } else {
-      $('editTitle').textContent = 'Currency symbol';
-      $('editHint').textContent = 'Shown in front of every amount, e.g. $, €, £, R$.';
+      $('editTitle').textContent = t('currencySymbol');
+      $('editHint').textContent = t('currencyHint');
       input.type = 'text';
       input.inputMode = 'text';
       input.maxLength = 4;
@@ -680,7 +678,7 @@
   });
 
   $('resetBtn').addEventListener('click', async () => {
-    if (!(await confirmDialog('Delete your budget and all expenses? This cannot be undone.'))) return;
+    if (!(await confirmDialog(t('resetConfirm')))) return;
     state.budget = 0;
     state.expenses = [];
     state.since = null;
@@ -743,6 +741,7 @@
   };
 
   // ---- Boot --------------------------------------------------------------
+  I18n.translatePage();
   prune(new Date());
   save();
   applyTheme();

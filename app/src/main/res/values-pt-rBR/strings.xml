@@ -1,0 +1,37 @@
+<!-- Brazilian Portuguese. Other Portuguese (Portugal, Angola, ...) gets English. -->
+<resources>
+    <string name="lang">pt</string>
+
+    <string name="widget_description">Quanto você pode gastar hoje, na tela inicial</string>
+    <string name="can_spend_today">Você pode gastar hoje</string>
+    <string name="can_spend_today_short">restam hoje</string>
+    <string name="over_today">Acima do orçamento de hoje em</string>
+    <string name="over_today_short">a mais hoje</string>
+    <string name="used_up_today">O orçamento de hoje acabou</string>
+    <string name="used_up_today_short">esgotado hoje</string>
+    <string name="over_month">Acima do orçamento do mês em</string>
+    <string name="over_month_short">a mais no mês</string>
+    <string name="no_budget">Defina um orçamento mensal</string>
+    <string name="no_budget_short">sem orçamento</string>
+    <string name="ring_left">de %s restantes</string>
+    <string name="tomorrow_allowance">%s amanhã</string>
+    <string name="next_month_allowance">%s no próximo mês</string>
+    <string name="allowance_ended">Limite esgotado</string>
+    <string name="sample_pill">↑ $78.58 amanhã</string>
+    <string name="month_left">%s restantes no mês</string>
+    <string name="month_over">%s a mais no mês</string>
+    <plurals name="days_left">
+        <item quantity="one">%d dia restante</item>
+        <item quantity="many">%d dias restantes</item>
+        <item quantity="other">%d dias restantes</item>
+    </plurals>
+    <string name="days_on_budget">%1$d/%2$d no orçamento</string>
+    <string name="add_expense">Adicionar gasto</string>
+    <string name="unlock">Desbloquear</string>
+    <string name="unlock_widget">Desbloquear widget</string>
+
+    <string name="channel_daily_allowance">Limite diário</string>
+    <string name="notify_title">Hoje você pode gastar %s</string>
+    <string name="notify_over_title">Sem limite diário neste mês</string>
+    <string name="over_budget_by">Acima do orçamento em %s</string>
+</resources>

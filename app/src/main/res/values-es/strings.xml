@@ -1,0 +1,37 @@
+<!-- Spanish, kept neutral (tú, "agregar") so it reads naturally in Latin America and Spain. -->
+<resources>
+    <string name="lang">es</string>
+
+    <string name="widget_description">Lo que puedes gastar hoy, en tu pantalla de inicio</string>
+    <string name="can_spend_today">Puedes gastar hoy</string>
+    <string name="can_spend_today_short">quedan hoy</string>
+    <string name="over_today">Excediste el presupuesto de hoy en</string>
+    <string name="over_today_short">de más hoy</string>
+    <string name="used_up_today">Se acabó el presupuesto de hoy</string>
+    <string name="used_up_today_short">agotado hoy</string>
+    <string name="over_month">Excediste el presupuesto del mes en</string>
+    <string name="over_month_short">de más este mes</string>
+    <string name="no_budget">Define un presupuesto mensual</string>
+    <string name="no_budget_short">sin presupuesto</string>
+    <string name="ring_left">de %s restantes</string>
+    <string name="tomorrow_allowance">%s mañana</string>
+    <string name="next_month_allowance">%s el próximo mes</string>
+    <string name="allowance_ended">Límite agotado</string>
+    <string name="sample_pill">↑ $78.58 mañana</string>
+    <string name="month_left">%s restantes este mes</string>
+    <string name="month_over">%s de más este mes</string>
+    <plurals name="days_left">
+        <item quantity="one">%d día restante</item>
+        <item quantity="many">%d días restantes</item>
+        <item quantity="other">%d días restantes</item>
+    </plurals>
+    <string name="days_on_budget">%1$d/%2$d en presupuesto</string>
+    <string name="add_expense">Agregar gasto</string>
+    <string name="unlock">Desbloquear</string>
+    <string name="unlock_widget">Desbloquear widget</string>
+
+    <string name="channel_daily_allowance">Límite diario</string>
+    <string name="notify_title">Hoy puedes gastar %s</string>
+    <string name="notify_over_title">Sin límite diario este mes</string>
+    <string name="over_budget_by">Excediste el presupuesto en %s</string>
+</resources>

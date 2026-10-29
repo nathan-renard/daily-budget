@@ -1,3 +1,49 @@
 <resources>
-    <string name="app_name">Daily Budget</string>
+    <string name="app_name" translatable="false">Daily Budget</string>
+
+    <!-- The web UI's text is in assets/www/strings.js. This tells it which of its languages to
+         show (en, pt or es): Android picks this file the way it picks the widget's text, so the
+         two always match. -->
+    <string name="lang">en</string>
+
+    <!-- Home-screen widget. The headline says where today stands; the short form is for the
+         smallest size. -->
+    <string name="widget_description">What you can spend today, on your home screen</string>
+    <string name="can_spend_today">You can spend today</string>
+    <string name="can_spend_today_short">left today</string>
+    <string name="over_today">Over today\'s budget by</string>
+    <string name="over_today_short">over today</string>
+    <string name="used_up_today">Today\'s budget is used up</string>
+    <string name="used_up_today_short">used up today</string>
+    <string name="over_month">Over this month\'s budget by</string>
+    <string name="over_month_short">over this month</string>
+    <string name="no_budget">Set a monthly budget</string>
+    <string name="no_budget_short">no budget set</string>
+    <!-- Inside the ring, under what's left today. -->
+    <string name="ring_left">of %s left</string>
+    <!-- The pill with tomorrow's allowance; %s may start with an arrow (↑ or ↓). -->
+    <string name="tomorrow_allowance">%s tomorrow</string>
+    <string name="next_month_allowance">%s next month</string>
+    <string name="allowance_ended">Allowance ended</string>
+    <!-- Sample for the widget picker's preview. -->
+    <string name="sample_pill">↑ $78.58 tomorrow</string>
+    <!-- The largest size's footer: "$942 left this month", "13 days left · 15/17 on budget". -->
+    <string name="month_left">%s left this month</string>
+    <string name="month_over">%s over this month</string>
+    <plurals name="days_left">
+        <item quantity="one">%d day left</item>
+        <item quantity="other">%d days left</item>
+    </plurals>
+    <string name="days_on_budget">%1$d/%2$d on budget</string>
+    <string name="add_expense">Add expense</string>
+    <!-- Free version: the button on the locked widget. -->
+    <string name="unlock">Unlock</string>
+    <string name="unlock_widget">Unlock widget</string>
+
+    <!-- Morning notification. The text after the title is month_left or over_budget_by,
+         then " · " and days_left. -->
+    <string name="channel_daily_allowance">Daily allowance</string>
+    <string name="notify_title">Today you can spend %s</string>
+    <string name="notify_over_title">No allowance left this month</string>
+    <string name="over_budget_by">Over budget by %s</string>
 </resources>

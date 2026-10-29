@@ -153,40 +153,40 @@ public class BudgetWidget extends AppWidgetProvider {
             Budget.Day d = day;
             String cur = data.currency;
             if (data.budget <= 0) {
-                label = "Set a monthly budget";
-                shortLabel = "no budget set";
+                label = context.getString(R.string.no_budget);
+                shortLabel = context.getString(R.string.no_budget_short);
                 amount = Budget.money(cur, 0);
             } else if (d.monthRemaining < 0) {
-                label = "Over this month's budget by";
-                shortLabel = "over this month";
+                label = context.getString(R.string.over_month);
+                shortLabel = context.getString(R.string.over_month_short);
                 amount = Budget.money(cur, -d.monthRemaining);
                 over = true;
             } else if (d.todayLeft < -0.005) {
-                label = "Over today's budget by";
-                shortLabel = "over today";
+                label = context.getString(R.string.over_today);
+                shortLabel = context.getString(R.string.over_today_short);
                 amount = Budget.money(cur, -d.todayLeft);
                 over = true;
             } else if (d.todayLeft < 0.005) {
-                label = "Today's budget is used up";
-                shortLabel = "used up today";
+                label = context.getString(R.string.used_up_today);
+                shortLabel = context.getString(R.string.used_up_today_short);
                 amount = Budget.money(cur, 0);
             } else {
-                label = "You can spend today";
-                shortLabel = "left today";
+                label = context.getString(R.string.can_spend_today);
+                shortLabel = context.getString(R.string.can_spend_today_short);
                 amount = Budget.money(cur, d.todayLeft);
             }
 
             if (data.budget > 0 && d.monthRemaining >= 0) {
                 if (d.monthRemaining <= 0.005 && d.daysLeft > 1) {
-                    pill = "Allowance ended";
+                    pill = context.getString(R.string.allowance_ended);
                     pillRole = Look.OVER;
                 } else if (d.daysLeft == 1) {
-                    pill = Budget.money(cur, d.tomorrowAllowance) + " next month";
+                    pill = context.getString(R.string.next_month_allowance, Budget.money(cur, d.tomorrowAllowance));
                     pillRole = Look.MUTED;
                 } else {
                     double diff = d.tomorrowAllowance - d.dailyAllowance;
                     String arrow = diff > 0.005 ? "↑ " : diff < -0.005 ? "↓ " : "";
-                    pill = arrow + Budget.money(cur, d.tomorrowAllowance) + " tomorrow";
+                    pill = context.getString(R.string.tomorrow_allowance, arrow + Budget.money(cur, d.tomorrowAllowance));
                     pillRole = diff > 0.005 ? Look.ACC : diff < -0.005 ? Look.OVER : Look.MUTED;
                 }
             }
@@ -247,7 +247,8 @@ public class BudgetWidget extends AppWidgetProvider {
         if (kind == RING) {
             // Inside the ring there's only room for the short label.
             if (!c.over && c.data.budget > 0 && c.day.todayLeft >= 0.005) {
-                rv.setTextViewText(R.id.label, "of " + Budget.money(c.data.currency, c.day.dailyAllowance) + " left");
+                rv.setTextViewText(R.id.label,
+                        context.getString(R.string.ring_left, Budget.money(c.data.currency, c.day.dailyAllowance)));
             } else {
                 rv.setTextViewText(R.id.label, c.shortLabel);
             }
@@ -297,8 +298,8 @@ public class BudgetWidget extends AppWidgetProvider {
         Budget.Day d = c.day;
         String cur = c.data.currency;
         rv.setTextViewText(R.id.foot_left, d.monthRemaining >= 0
-                ? Budget.money(cur, d.monthRemaining) + " left this month"
-                : Budget.money(cur, -d.monthRemaining) + " over this month");
+                ? context.getString(R.string.month_left, Budget.money(cur, d.monthRemaining))
+                : context.getString(R.string.month_over, Budget.money(cur, -d.monthRemaining)));
         int ok = 0;
         int judged = 0;
         for (int day = 1; day < c.today.getDayOfMonth(); day++) {
@@ -306,8 +307,10 @@ public class BudgetWidget extends AppWidgetProvider {
             if (status == 0 || status == 1) judged++;
             if (status == 0) ok++;
         }
-        rv.setTextViewText(R.id.foot_right, d.daysLeft + (d.daysLeft == 1 ? " day left" : " days left")
-                + (judged > 0 ? " · " + ok + "/" + judged + " on budget" : ""));
+        String days = context.getResources().getQuantityString(R.plurals.days_left, d.daysLeft, d.daysLeft);
+        rv.setTextViewText(R.id.foot_right, judged > 0
+                ? days + " · " + context.getString(R.string.days_on_budget, ok, judged)
+                : days);
         c.look.text(rv, R.id.foot_left, Look.MUTED);
         c.look.text(rv, R.id.foot_right, Look.MUTED);
         return rv;
@@ -324,9 +327,12 @@ public class BudgetWidget extends AppWidgetProvider {
         c.look.text(rv, R.id.amount, Look.MUTED);
         c.look.tint(rv, R.id.unlock_bg, Look.BTN);
         c.look.tint(rv, R.id.unlock_icon, Look.BTN_TEXT);
-        rv.setTextViewText(R.id.unlock_text, kind == SMALL ? "Unlock" : "Unlock widget");
+        rv.setTextViewText(R.id.unlock_text, context.getString(kind == SMALL ? R.string.unlock : R.string.unlock_widget));
         c.look.text(rv, R.id.unlock_text, Look.BTN_TEXT);
         if (!small) {
+            // Set here, not only in the layout: the launcher inflates layouts in the phone's
+            // language, which on Android 13+ can differ from the one chosen for the app.
+            rv.setTextViewText(R.id.label, context.getString(R.string.can_spend_today));
             c.look.text(rv, R.id.label, Look.MUTED);
             c.look.tint(rv, R.id.bar_track, Look.LINE);
         }
@@ -341,6 +347,7 @@ public class BudgetWidget extends AppWidgetProvider {
     private static void addButton(Context context, RemoteViews rv, Content c) {
         c.look.tint(rv, R.id.add_bg, Look.BTN);
         c.look.tint(rv, R.id.add_icon, Look.BTN_TEXT);
+        rv.setContentDescription(R.id.add, context.getString(R.string.add_expense)); // see locked()
         rv.setOnClickPendingIntent(R.id.add, open(context, "add"));
     }
 

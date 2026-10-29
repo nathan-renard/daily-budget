@@ -76,7 +76,7 @@ final class Reminder {
         if (message == null) return; // no budget set yet
 
         nm.createNotificationChannel(new NotificationChannel(
-                CHANNEL_ID, "Daily allowance", NotificationManager.IMPORTANCE_DEFAULT));
+                CHANNEL_ID, context.getString(R.string.channel_daily_allowance), NotificationManager.IMPORTANCE_DEFAULT));
 
         Intent open = new Intent(context, MainActivity.class);
         PendingIntent tap = PendingIntent.getActivity(context, 0, open, PendingIntent.FLAG_IMMUTABLE);
@@ -97,17 +97,17 @@ final class Reminder {
         Budget.Data data = Budget.load(context);
         if (data.budget <= 0) return null;
         Budget.Day d = Budget.compute(data, LocalDate.now());
-        String days = d.daysLeft + (d.daysLeft == 1 ? " day left" : " days left");
+        String days = context.getResources().getQuantityString(R.plurals.days_left, d.daysLeft, d.daysLeft);
 
         if (d.monthRemaining < 0) {
             return new String[] {
-                    "No allowance left this month",
-                    "Over budget by " + Budget.money(data.currency, -d.monthRemaining) + " · " + days,
+                    context.getString(R.string.notify_over_title),
+                    context.getString(R.string.over_budget_by, Budget.money(data.currency, -d.monthRemaining)) + " · " + days,
             };
         }
         return new String[] {
-                "Today you can spend " + Budget.money(data.currency, Math.max(0, d.todayLeft)),
-                Budget.money(data.currency, d.monthRemaining) + " left this month · " + days,
+                context.getString(R.string.notify_title, Budget.money(data.currency, Math.max(0, d.todayLeft))),
+                context.getString(R.string.month_left, Budget.money(data.currency, d.monthRemaining)) + " · " + days,
         };
     }
 }

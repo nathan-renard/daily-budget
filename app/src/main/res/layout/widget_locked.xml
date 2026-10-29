@@ -40,7 +40,7 @@
             <TextView
                 android:id="@+id/label"
                 style="@style/WidgetLabel"
-                android:text="You can spend today" />
+                android:text="@string/can_spend_today" />
 
             <TextView
                 android:id="@+id/amount"

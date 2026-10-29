@@ -97,7 +97,7 @@
             <TextView
                 android:id="@+id/pill"
                 style="@style/WidgetPill"
-                android:text="↑ $78.58 tomorrow" />
+                android:text="@string/sample_pill" />
         </FrameLayout>
     </LinearLayout>
 </FrameLayout>

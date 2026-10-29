@@ -40,7 +40,7 @@
             <TextView
                 android:id="@+id/label"
                 style="@style/WidgetLabel"
-                android:text="You can spend today" />
+                android:text="@string/can_spend_today" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -74,7 +74,7 @@
                     <TextView
                         android:id="@+id/pill"
                         style="@style/WidgetPill"
-                        android:text="↑ $78.58 tomorrow" />
+                        android:text="@string/sample_pill" />
                 </FrameLayout>
             </LinearLayout>
 
@@ -108,7 +108,7 @@
             android:layout_width="46dp"
             android:layout_height="46dp"
             android:layout_marginStart="14dp"
-            android:contentDescription="Add expense">
+            android:contentDescription="@string/add_expense">
 
             <ImageView
                 android:id="@+id/add_bg"

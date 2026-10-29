@@ -50,6 +50,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    // Lists the languages in res/values-* so Android 13+ can set the app's language apart from
+    // the phone's (Settings > Apps > Daily Budget > Language). The default one is named in
+    // res/resources.properties.
+    androidResources {
+        generateLocaleConfig = true
+    }
 }
 
 dependencies {

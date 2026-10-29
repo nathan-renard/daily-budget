@@ -63,6 +63,9 @@ Then open <http://localhost:8765/>. Data is saved to the browser's `localStorage
 notification settings, system-bar colours and purchases do nothing there (the Pro dialog shows
 sample prices). Everything else works the same.
 
+The UI follows the browser's language. Add `?lang=pt` or `?lang=es` to the address to see another
+one; dates and numbers still follow the browser.
+
 ### Build and run on Android
 
 You need JDK 17 or newer and the Android SDK with platform 36. Android Studio includes both, and you
@@ -174,6 +177,7 @@ JavaScript as `window.Android`:
 | `setReminder(enabled, hour, minute)` | Reminder settings change | Schedules or cancels the daily alarm, and asks for notification permission on Android 13+ |
 | `testReminder()` | **Send test notification** is tapped | Shows the notification immediately |
 | `sdk()` | At startup | Returns the Android version, so **Widget colours** only shows on Android 12+ |
+| `language()` | At startup | Returns the language Android picked for the widget and notification (`'en'`, `'pt'`, `'es'`), so the page uses the same one |
 | `is24Hour()` | Times are shown | Returns the phone's 12/24-hour setting, which the locale's time format ignores |
 | `takeLaunchAction()` | At startup | Returns what the widget opened the app for (`'add'`, `'pro'`), once |
 | `proState()` | At startup | Returns the Pro state: unlocked or not, prices, pending payments |
@@ -238,6 +242,7 @@ refund locks it again. Without Pro, the widget shows a locked placeholder that o
 ```text
 app/src/main/assets/www/          The UI: plain HTML, CSS and JavaScript, no build step
   index.html                      Tabs, settings page and dialogs
+  strings.js                      All the UI's text, in English, Brazilian Portuguese and Spanish
   budget.js                       The budget math (pure functions, no DOM)
   app.js                          Rendering, storage, settings and the bridge calls
   style.css                       Dark, AMOLED and light themes as CSS custom properties
@@ -277,6 +282,14 @@ Some starting points if you fork it:
   Ideas: weekly or payday-to-payday
   periods instead of calendar months, carrying leftovers into next month, setting aside a savings
   goal before the daily number is worked out.
+- **Change or add a language.** The UI's text is in
+  [`strings.js`](app/src/main/assets/www/strings.js), with each string's translations side by side.
+  The widget's and the notification's text is in `res/values/strings.xml`, with a copy per language
+  in `res/values-pt-rBR/` and `res/values-es/`. To add a language, add its code to `LANGUAGES` and a
+  translation to every entry in `strings.js`, and copy `values/strings.xml` to `values-<code>/`,
+  setting `lang` to the same code. Android picks which `strings.xml` to use from the phone's
+  languages, and the page asks it which one it picked. Dates and numbers follow the phone's locale
+  either way.
 - **Change what's stored.** If you change the shape of the saved data, migrate it in `load()` in
   `app.js` or bump `STORAGE_KEY`, so existing installs don't break. If the notification or the
   widget needs the new fields, add them to `syncNative()` as well.

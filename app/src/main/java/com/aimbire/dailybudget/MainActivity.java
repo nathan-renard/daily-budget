@@ -237,6 +237,12 @@ public class MainActivity extends Activity {
             return Build.VERSION.SDK_INT;
         }
 
+        /** Which of strings.js's languages to show: the one the widget and notification use. */
+        @JavascriptInterface
+        public String language() {
+            return getString(R.string.lang);
+        }
+
         /** The phone's 12/24-hour setting, which the page's locale doesn't reflect. */
         @JavascriptInterface
         public boolean is24Hour() {

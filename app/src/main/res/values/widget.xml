@@ -1,6 +1,4 @@
 <resources>
-    <string name="widget_description">What you can spend today, on your home screen</string>
-
     <!-- The widget layouts' built-in colours: the dark theme. The widget picker's preview uses
          them; BudgetWidget recolours placed widgets to match the app's theme. -->
     <color name="widget_bg">#1b1b1b</color>
